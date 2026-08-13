@@ -42,6 +42,7 @@ export {
 } from './program/defaults';
 export { validateProgram } from './program/validate';
 export { normalizeProgram } from './program/normalize';
+export { accessArcs, countAccessTopologies, sampleAccessTree } from './program/topology';
 
 // plot
 export * from './plot/types';

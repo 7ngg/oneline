@@ -160,6 +160,9 @@ export const planModelSchema = z
           .object({
             ...openingBase,
             swing: z.enum(['left', 'right']),
+            // added after first release — optional so older saves keep parsing
+            hinge: z.enum(['a', 'b']).optional(),
+            kind: z.enum(['door', 'open', 'sliding']).optional(),
             connects: z.tuple([z.string(), z.union([z.string(), z.literal('outside')])]),
           })
           .strict(),

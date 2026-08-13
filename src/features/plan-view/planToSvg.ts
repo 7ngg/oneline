@@ -102,23 +102,50 @@ export function planToSvgInner(plan: PlanModel, opts: PlanRenderOptions): string
         wall.thickness + 2
       }" stroke-linecap="butt"/>`,
     );
-    // Door symbol: leaf line perpendicular to the wall at the hinge (p0) plus
-    // a quarter-circle swing arc from the free jamb (p1) to the leaf tip.
-    // door.swing = which SIDE of the wall it opens into: 'left' = the side to
-    // the left of the wall's a→b direction (world coords, Y-up).
+    const kind = door.kind ?? 'door';
+    if (kind === 'open') {
+      // doorless opening (CT01 notation: dashed line) — the wall just stops
+      parts.push(
+        `<line x1="${p0.x}" y1="${-p0.y}" x2="${p1.x}" y2="${-p1.y}" stroke="#8a93a3" stroke-width="${thin}" stroke-dasharray="${thin * 4} ${thin * 3}"/>`,
+      );
+      continue;
+    }
     const dx = (p1.x - p0.x) / (door.width || 1);
     const dy = (p1.y - p0.y) / (door.width || 1);
+    if (kind === 'sliding') {
+      // sliding glass partition (CT01: dashed blue) — two offset half-leaves
+      const ox = -dy * (wall.thickness / 2 + thin);
+      const oy = dx * (wall.thickness / 2 + thin);
+      const aX = p0.x + (p1.x - p0.x) * 0.6;
+      const aY = p0.y + (p1.y - p0.y) * 0.6;
+      const bX = p0.x + (p1.x - p0.x) * 0.4;
+      const bY = p0.y + (p1.y - p0.y) * 0.4;
+      parts.push(
+        `<line x1="${p0.x + ox}" y1="${-(p0.y + oy)}" x2="${aX + ox}" y2="${-(aY + oy)}" stroke="#4d8fd6" stroke-width="${thin * 1.5}" stroke-dasharray="${thin * 5} ${thin * 3}"/>`,
+        `<line x1="${bX - ox}" y1="${-(bY - oy)}" x2="${p1.x - ox}" y2="${-(p1.y - oy)}" stroke="#4d8fd6" stroke-width="${thin * 1.5}" stroke-dasharray="${thin * 5} ${thin * 3}"/>`,
+      );
+      continue;
+    }
+    // Hinged door symbol: leaf line perpendicular to the wall at the hinge
+    // end (t0 end by default, the far end when door.hinge === 'b' — Do01
+    // puts the hinge by the corner) plus a quarter-circle swing arc from the
+    // free jamb to the leaf tip. door.swing = which SIDE of the wall it
+    // opens into: 'left' = left of the wall's a→b direction (world, Y-up).
+    const hingeAtB = door.hinge === 'b';
+    const hingeP = hingeAtB ? p1 : p0;
+    const freeP = hingeAtB ? p0 : p1;
     // world perpendicular toward the chosen side
     const nx = door.swing === 'left' ? -dy : dy;
     const ny = door.swing === 'left' ? dx : -dx;
-    const leafX = p0.x + nx * door.width;
-    const leafY = p0.y + ny * door.width;
-    // arc direction around the hinge: side 'left' is CCW in world = CW on the
-    // Y-flipped screen = SVG sweep 1; side 'right' mirrors to sweep 0
-    const sweep = door.swing === 'left' ? 1 : 0;
+    const leafX = hingeP.x + nx * door.width;
+    const leafY = hingeP.y + ny * door.width;
+    // arc direction around the hinge: side 'left' with the hinge at t0 is
+    // CCW in world = sweep 1 on the Y-flipped screen; mirroring either the
+    // side or the hinge end flips it
+    const sweep = (door.swing === 'left') === !hingeAtB ? 1 : 0;
     parts.push(
-      `<path d="M${p1.x} ${-p1.y} A${door.width} ${door.width} 0 0 ${sweep} ${leafX} ${-leafY}" fill="none" stroke="#8a93a3" stroke-width="${thin}"/>`,
-      `<line x1="${p0.x}" y1="${-p0.y}" x2="${leafX}" y2="${-leafY}" stroke="#8a93a3" stroke-width="${thin}"/>`,
+      `<path d="M${freeP.x} ${-freeP.y} A${door.width} ${door.width} 0 0 ${sweep} ${leafX} ${-leafY}" fill="none" stroke="#8a93a3" stroke-width="${thin}"/>`,
+      `<line x1="${hingeP.x}" y1="${-hingeP.y}" x2="${leafX}" y2="${-leafY}" stroke="#8a93a3" stroke-width="${thin}"/>`,
     );
   }
   for (const win of plan.windows) {

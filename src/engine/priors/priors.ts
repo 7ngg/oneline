@@ -5,6 +5,7 @@
 // which is also why our halls map there for adjacency purposes.
 
 import raw from './resplanPriors.json';
+import { CORRIDOR_MAX_ASPECT } from './designRules';
 import type { RoomType } from '../program/types';
 
 type ResplanType = 'living' | 'kitchen' | 'bedroom' | 'bathroom' | 'balcony';
@@ -38,11 +39,12 @@ export function touchRate(a: RoomType, b: RoomType): number | null {
 
 /**
  * Per-type hard aspect cap for candidate rejection: the p98 of real rooms of
- * that type with 25% headroom. Halls/corridors are exempt (long is their
- * job); unknown types get a generous default.
+ * that type with 25% headroom. Halls get design_rules_v4 C02's BINDING cap —
+ * corridors beyond 4:1 are tunnels ("widen it into a hall or change the room
+ * distribution — do not ship a tunnel"). Unknown types: generous default.
  */
 export function aspectCapFor(type: RoomType): number {
-  if (type === 'hall') return 8;
+  if (type === 'hall') return CORRIDOR_MAX_ASPECT;
   const mapped = TYPE_MAP[type];
   if (!mapped) return 3.5;
   const p98 = (raw.types as Record<string, { aspectP98: number }>)[mapped]?.aspectP98;

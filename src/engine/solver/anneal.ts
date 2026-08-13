@@ -49,6 +49,7 @@ export function anneal(input: AnnealInput): Candidate {
   const regionBbox = rectFromBbox(ringBbox(region.outer));
   const fixedCells = current.fixedCells;
   const zoneOfRoom = current.zoneOfRoom;
+  const targetPairs = current.targetPairs;
 
   const evaluate = (tree: SlicingTree, assignment: number[]): Candidate | null => {
     const { cells, slivers } = assembleCells(tree, assignment, region, regionBbox, fixedCells, rooms.length);
@@ -59,6 +60,7 @@ export function anneal(input: AnnealInput): Candidate {
       adjacency,
       footprint,
       ...(input.entrance ? { entrance: input.entrance } : {}),
+      ...(targetPairs && targetPairs.length > 0 ? { targetPairs } : {}),
     });
     if (!terms) return null;
     return {
@@ -70,6 +72,7 @@ export function anneal(input: AnnealInput): Candidate {
       ...(current.region ? { region: current.region } : {}),
       ...(fixedCells ? { fixedCells } : {}),
       ...(zoneOfRoom ? { zoneOfRoom } : {}),
+      ...(targetPairs ? { targetPairs } : {}),
     };
   };
 

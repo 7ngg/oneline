@@ -15,7 +15,9 @@ export const SCORE_WEIGHTS = {
   areaFit: 3.5,
   adjacency: 2.5,
   minDim: 2,
-  circulation: 1.5,
+  treeFit: 2,
+  circulation: 2, // strict B01/K02 hub metric deserves real pull
+
   aspect: 1.5,
   exposure: 1.5,
   typicality: 1.5,
@@ -29,6 +31,7 @@ export interface ScoredTerms {
   areaFit: number;
   adjacency: number;
   minDim: number;
+  treeFit: number;
   circulation: number;
   aspect: number;
   exposure: number;
@@ -47,6 +50,12 @@ export interface ScoreInput {
   footprint: Poly;
   /** Entrance hint on the plot boundary (world mm), when the user set one. */
   entrance?: Vec;
+  /**
+   * Topology-first candidates: access-tree edges (parent room index, child
+   * room index) this layout is supposed to realize as door-able walls.
+   * Neutral (1) when absent.
+   */
+  targetPairs?: Array<[number, number]>;
 }
 
 // Bathrooms/WCs stack on shared plumbing walls. Kitchens deliberately NOT
@@ -67,7 +76,7 @@ const STIFFNESS: Record<RoomType, number> = {
   bathroom: 3,
   wc: 3,
   storage: 2.5,
-  kitchen: 1.5,
+  kitchen: 1.2, // A02 tier 1: kitchens absorb surplus before private rooms
   hall: 1.5,
   bedroom: 0.8,
   balcony: 1,
@@ -157,21 +166,27 @@ export function score(input: ScoreInput): ScoredTerms | null {
     if (rule.kind === 'avoid' ? !touching : touching) adjacencySatisfied += w;
   }
 
-  // --- circulation: every room needs a door-able wall to a circulation HUB
-  // (hall or living — the rooms that may legitimately be walked through).
-  // This is the score-time proxy for the door router's transit costs: a
-  // layout failing here WILL produce walk-through-bedroom paths, so it loses
-  // at selection instead of shipping flagged. Neutral without hubs.
-  const hubCells: Poly[] = [];
+  // --- circulation: every room needs a door-able wall to a circulation HUB.
+  // Which hubs count is design_rules_v4's B01/K02: when the program HAS a
+  // hall, bedrooms, bathrooms, WCs and the kitchen must reach the HALL —
+  // reaching them through the living room is the walk-through-a-habitable-
+  // room defect (B01 NORM). Without a hall the living room IS the
+  // circulation (K02's else-branch) and counts for every room. Storage and
+  // balconies may hang off either hub (or a bedroom — ensuite/wardrobe),
+  // so they keep the relaxed hub set. Neutral without hubs.
+  const hallCells: Poly[] = [];
+  const livingCells: Poly[] = [];
   for (let i = 0; i < rooms.length; i++) {
     const type = (rooms[i] as RoomSpec).type;
-    if (type === 'hall' || type === 'living') {
-      const cell = cells[i];
-      if (cell) hubCells.push(cell);
-    }
+    const cell = cells[i];
+    if (!cell) continue;
+    if (type === 'hall') hallCells.push(cell);
+    else if (type === 'living') livingCells.push(cell);
   }
+  const STRICT_HUB_TYPES = new Set<RoomType>(['bedroom', 'bathroom', 'wc', 'kitchen']);
   let circulation = 1;
-  if (hubCells.length > 0) {
+  if (hallCells.length + livingCells.length > 0) {
+    const relaxedHubs = hallCells.concat(livingCells); // hot loop: build once
     let reached = 0;
     let nonHub = 0;
     for (let i = 0; i < rooms.length; i++) {
@@ -180,11 +195,25 @@ export function score(input: ScoreInput): ScoredTerms | null {
       nonHub += 1;
       const cell = cells[i];
       if (!cell) continue;
+      const hubs = hallCells.length > 0 && STRICT_HUB_TYPES.has(type) ? hallCells : relaxedHubs;
       // must match the door router's requirement (width + jambs), not bare
       // adjacency — a 750 mm shared wall "touches" but can't hold a door
-      if (hubCells.some((hub) => sharedBoundaryLength(cell, hub) >= DOOR_MIN_WIDTH + 200)) reached += 1;
+      if (hubs.some((hub) => sharedBoundaryLength(cell, hub) >= DOOR_MIN_WIDTH + 200)) reached += 1;
     }
     circulation = nonHub > 0 ? reached / nonHub : 1;
+  }
+
+  // --- treeFit: fraction of the candidate's target access-tree edges that
+  // are realized as door-able shared walls. Neutral without a target tree.
+  let treeFit = 1;
+  if (input.targetPairs && input.targetPairs.length > 0) {
+    let realized = 0;
+    for (const [p, c] of input.targetPairs) {
+      const a = cells[p];
+      const b = cells[c];
+      if (a && b && sharedBoundaryLength(a, b) >= DOOR_MIN_WIDTH + 200) realized += 1;
+    }
+    treeFit = realized / input.targetPairs.length;
   }
 
   // --- wet cluster: kitchens/bathrooms/wcs share walls (plumbing stacks).
@@ -257,6 +286,7 @@ export function score(input: ScoreInput): ScoredTerms | null {
     areaFit: areaFit / n,
     adjacency: adjacencyWeight > 0 ? adjacencySatisfied / adjacencyWeight : 1,
     minDim: minDimTerm / n,
+    treeFit,
     circulation,
     aspect: aspect / n,
     exposure: exposureNeed > 0 ? exposureMet / exposureNeed : 1,
@@ -304,6 +334,7 @@ const zeroTerms = (): Omit<ScoredTerms, 'total'> => ({
   areaFit: 0,
   adjacency: 0,
   minDim: 0,
+  treeFit: 0,
   circulation: 0,
   aspect: 0,
   exposure: 0,

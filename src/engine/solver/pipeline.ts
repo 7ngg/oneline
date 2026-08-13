@@ -5,7 +5,7 @@
 // and goldens are byte-stable.
 
 import { area2OfPoly } from '../geometry/clip';
-import { ringBbox, type Poly } from '../geometry/polygon';
+import { polyBoundaryLength, ringBbox, type Poly } from '../geometry/polygon';
 import { rectFromBbox } from '../geometry/rect';
 import { lerp, type Vec } from '../geometry/vec';
 import { Rng } from '../rng';
@@ -17,6 +17,7 @@ import { computeFootprint } from '../plot/footprint';
 import { validatePlot } from '../plot/validate';
 import type { Plot } from '../plot/types';
 import { normalizeProgram } from '../program/normalize';
+import { countAccessTopologies, sampleAccessTree } from '../program/topology';
 import type { Program, RoomSpec } from '../program/types';
 import { validateProgram } from '../program/validate';
 import { assignRooms, type Assignment } from './assign';
@@ -75,6 +76,8 @@ export interface Candidate {
   fixedCells?: Array<{ roomIndex: number; cell: Poly }>;
   /** roomIndex → zone rank; anneal swaps stay within a zone when present. */
   zoneOfRoom?: number[];
+  /** Topology-first: access-tree edges (parent, child) to realize as walls. */
+  targetPairs?: Array<[number, number]>;
 }
 
 export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): GenerateResult {
@@ -118,14 +121,33 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
     const b = req.plot.boundary[(req.plot.entrance.edgeIndex + 1) % req.plot.boundary.length];
     return a && b ? lerp(a, b, req.plot.entrance.t) : null;
   })();
-  const scoreCells = (cells: (Poly | null)[]) =>
+  const scoreCells = (cells: (Poly | null)[], targetPairs?: Array<[number, number]>) =>
     score({
       rooms,
       cells,
       adjacency: program.adjacency,
       footprint,
       ...(entranceVec ? { entrance: entranceVec } : {}),
+      ...(targetPairs && targetPairs.length > 0 ? { targetPairs } : {}),
     });
+
+  // Honest diversity ceiling (matrix-tree count over the privacy-rule access
+  // digraph): when the program structurally admits fewer distinct access
+  // topologies than the variants asked for, say so up front instead of
+  // reporting a search failure later.
+  const topoCeiling = countAccessTopologies(rooms);
+  if (topoCeiling > 0n && topoCeiling < BigInt(req.k)) {
+    violations.push(
+      violation(
+        'TOPOLOGY_CEILING',
+        'info',
+        `This program admits only ${topoCeiling} structurally distinct access ${
+          topoCeiling === 1n ? 'topology' : 'topologies'
+        } — fewer than the ${req.k} variants requested.`,
+        ['program'],
+      ),
+    );
+  }
 
   // single-room shortcut: the room IS the footprint
   if (rooms.length === 1) {
@@ -159,6 +181,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
     fixedCells: Array<{ roomIndex: number; cell: Poly }> | undefined,
     zoneOfRoom: number[] | undefined,
     lenient: boolean,
+    targetPairs?: Array<[number, number]>,
   ): Candidate | null => {
     const regionBbox = rectFromBbox(ringBbox(region.outer));
     const { cells, slivers } = assembleCells(tree, assignment, region, regionBbox, fixedCells, rooms.length);
@@ -189,7 +212,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
         return null;
       }
     }
-    const terms = scoreCells(cells);
+    const terms = scoreCells(cells, targetPairs);
     if (!terms) {
       discards.nonFinite++;
       return null;
@@ -203,6 +226,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
       ...(region !== footprint ? { region } : {}),
       ...(fixedCells && fixedCells.length > 0 ? { fixedCells } : {}),
       ...(zoneOfRoom ? { zoneOfRoom } : {}),
+      ...(targetPairs && targetPairs.length > 0 ? { targetPairs } : {}),
     };
   };
 
@@ -270,6 +294,38 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
     );
   };
 
+  // family D: topology-first — sample a distinct architect-legal access tree
+  // (B01/K02/Z01 parent rules) and let the annealer realize its edges as
+  // door-able walls. Diversity by construction: distinct trees, not
+  // fingerprint luck.
+  const seenTrees = new Set<string>();
+  const makeTopology = (candidateRng: Rng, lenient: boolean): Candidate | null => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const parentOf = sampleAccessTree(candidateRng, rooms);
+      if (!parentOf) return null;
+      const sig = parentOf.join(',');
+      if (seenTrees.has(sig) && attempt < 2) continue;
+      seenTrees.add(sig);
+      const targetPairs: Array<[number, number]> = [];
+      parentOf.forEach((p, c) => {
+        if (p >= 0) targetPairs.push([p, c]);
+      });
+      const tree0 = randomTree(candidateRng, rooms.length);
+      const rects0 = treeToRects(tree0, bbox);
+      const assignment = assignRooms(rooms, rects0, footprint, candidateRng, 4, entranceVec);
+      return gateAndScore(
+        fitTargets(tree0, assignment, rooms.length),
+        assignment,
+        footprint,
+        undefined,
+        undefined,
+        lenient,
+        targetPairs,
+      );
+    }
+    return null;
+  };
+
   const makeCandidate = (candidateRng: Rng, family: number, lenient: boolean): Candidate | null => {
     if (family === 2) return makeZoned(candidateRng, lenient) ?? makeFree(candidateRng, lenient);
     if (family === 3) {
@@ -279,6 +335,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
         makeFree(candidateRng, lenient)
       );
     }
+    if (family === 4) return makeTopology(candidateRng, lenient) ?? makeFree(candidateRng, lenient);
     return makeFree(candidateRng, lenient);
   };
 
@@ -293,7 +350,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
         timedOut = true;
         break;
       }
-      const candidate = makeCandidate(rng.fork(round * candidateCount + i), i % 4, lenient);
+      const candidate = makeCandidate(rng.fork(round * candidateCount + i), i % 5, lenient);
       if (candidate) candidates.push(candidate);
       if (i % 8 === 0) {
         onProgress({
@@ -400,6 +457,12 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
       if (Math.min(wSide, hSide) > 0 && Math.max(wSide, hSide) / Math.min(wSide, hSide) > aspectCapFor(room.type) * 1.15) {
         return false;
       }
+      // NET-area floor: gross minus a conservative wall-inset estimate must
+      // clear the room's minimum, or post-processing will stamp the variant
+      // with a ROOM_BELOW_MIN_AREA error it can never repair
+      const gross = area2OfPoly(cell) / 2;
+      const insetEstimate = polyBoundaryLength(cell) * program.defaults.wallInt;
+      if (gross - insetEstimate < room.area.min) return false;
       return true;
     });
   const compliant = pool.filter(meetsHardFloors);
@@ -451,6 +514,7 @@ const emptyTerms = (): ScoredTerms => ({
   areaFit: 0,
   adjacency: 0,
   minDim: 0,
+  treeFit: 0,
   circulation: 0,
   aspect: 0,
   exposure: 0,

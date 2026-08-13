@@ -31,12 +31,23 @@ export interface Opening {
   width: Mm;
 }
 
+/**
+ * Connection taxonomy (design_rules_v4 §2): a plain hinged door, a doorless
+ * open passage (a wall that simply stops — CT01's dashed line), or a sliding
+ * glass partition (the standard kitchen↔living separation).
+ */
+export type DoorKind = 'door' | 'open' | 'sliding';
+
 export interface Door extends Opening {
   /**
    * Side of the wall the leaf opens into, relative to the wall's a→b
    * direction (world coords): 'left' = wall.leftRoomId's side.
    */
   swing: 'left' | 'right';
+  /** Hinge end along the wall axis: 'a' = at the t0 end (default). Do01. */
+  hinge?: 'a' | 'b';
+  /** Absent = 'door' (older saves predate the taxonomy). */
+  kind?: DoorKind;
   connects: [string, string | 'outside'];
 }
 

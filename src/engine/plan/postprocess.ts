@@ -11,6 +11,7 @@ import { violation, type Violation } from '../violations';
 import type { Plot } from '../plot/types';
 import type { Program, RoomSpec } from '../program/types';
 import type { Metrics, PlanModel, PlanRoom } from './types';
+import { checkFurnishability } from './furnish';
 import { placeOpenings } from './openings';
 import { validatePlan } from './validate';
 import { extractWalls, wallLength } from './walls';
@@ -99,6 +100,11 @@ export function postProcess(input: PostProcessInput): PlanModel {
   const walls = extractWalls(planRooms, footprint, program.defaults);
   const openings = placeOpenings(planRooms, walls, program, plot);
   violations.push(...openings.violations);
+
+  // --- furnishability (design_rules_v4 §14): warn when the standard
+  // furniture set cannot stand in a room clear of door swings ---
+  const specById = new Map<string, RoomSpec>(program.rooms.map((s) => [s.id, s]));
+  violations.push(...checkFurnishability(planRooms, walls, openings.doors, specById));
 
   // --- net areas: gross − Σ (wall length × thickness/2) per flanking room ---
   const insetByRoom = new Map<string, number>();

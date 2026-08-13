@@ -11,8 +11,11 @@ import { mm } from '../units';
 import type { Rng } from '../rng';
 import type { RoomSpec } from '../program/types';
 
-const CORRIDOR_WIDTH = 1_350; // mm — comfortable single-loaded corridor
+// C03: ≥1200 clear; 1350 is a comfortable single-loaded corridor
+const CORRIDOR_WIDTH = 1_350;
 const MIN_LENGTH = 2_200;
+// C02 (BINDING): corridor proportion caps at 4:1 — widen, never elongate
+const MAX_ASPECT = 4;
 
 export interface CorridorFixture {
   hallCell: Poly;
@@ -50,21 +53,27 @@ export function corridorFixture(
   // never bisect: leave at least a room's worth of region beyond the strip
   const maxLen = depthSpan - 2_600;
   if (maxLen < MIN_LENGTH) return null;
-  const targetLen = Math.min(Math.max(hall.area.ideal / CORRIDOR_WIDTH, MIN_LENGTH), maxLen, depthSpan * 0.62);
+  let width = CORRIDOR_WIDTH;
+  let targetLen = Math.min(Math.max(hall.area.ideal / width, MIN_LENGTH), maxLen, depthSpan * 0.62);
+  if (targetLen / width > MAX_ASPECT) {
+    // C02: don't ship a tunnel — widen the strip until 4:1 holds
+    width = Math.ceil(targetLen / MAX_ASPECT / 50) * 50;
+    targetLen = Math.min(Math.max(hall.area.ideal / width, MIN_LENGTH), maxLen, depthSpan * 0.62);
+  }
 
   const jitter = (rng.next() - 0.5) * 2_000;
   const across = vertical
-    ? Math.min(Math.max(entrance.x + jitter, bb.minX + 600), bb.maxX - 600 - CORRIDOR_WIDTH)
-    : Math.min(Math.max(entrance.y + jitter, bb.minY + 600), bb.maxY - 600 - CORRIDOR_WIDTH);
+    ? Math.min(Math.max(entrance.x + jitter, bb.minX + 600), bb.maxX - 600 - width)
+    : Math.min(Math.max(entrance.y + jitter, bb.minY + 600), bb.maxY - 600 - width);
 
   const strip =
     side === 'S'
-      ? rect(across, bb.minY, CORRIDOR_WIDTH, targetLen)
+      ? rect(across, bb.minY, width, targetLen)
       : side === 'N'
-        ? rect(across, bb.maxY - targetLen, CORRIDOR_WIDTH, targetLen)
+        ? rect(across, bb.maxY - targetLen, width, targetLen)
         : side === 'W'
-          ? rect(bb.minX, across, targetLen, CORRIDOR_WIDTH)
-          : rect(bb.maxX - targetLen, across, targetLen, CORRIDOR_WIDTH);
+          ? rect(bb.minX, across, targetLen, width)
+          : rect(bb.maxX - targetLen, across, targetLen, width);
   const stripPoly = poly(rectRing(strip));
 
   const hallCell = largestPoly(intersectPolys(footprint, stripPoly));
