@@ -6,6 +6,14 @@
 const KEY = 'oneline.geminiKey';
 const MODEL_KEY = 'oneline.geminiModel';
 
+// Deployed builds (see deploy/) set VITE_GEMINI_PROXY to a same-origin path.
+// nginx there holds the real key and overwrites the x-goog-api-key header, so
+// the browser only ever carries the placeholder below.
+const PROXY_BASE = import.meta.env.VITE_GEMINI_PROXY as string | undefined;
+export const GEMINI_VIA_PROXY = Boolean(PROXY_BASE);
+export const GEMINI_BASE = PROXY_BASE || 'https://generativelanguage.googleapis.com';
+const PROXY_PLACEHOLDER_KEY = 'served-by-proxy';
+
 // gemini-2.5-flash was retired for new users mid-2026; 3.5-flash verified
 // against this app's responseSchema JSON mode. Overridable in Settings (N12).
 export const DEFAULT_GEMINI_MODEL = 'gemini-3.5-flash';
@@ -21,6 +29,7 @@ export function getGeminiKey(): string | null {
     const dev = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
     if (dev) return dev;
   }
+  if (GEMINI_VIA_PROXY) return PROXY_PLACEHOLDER_KEY;
   return null;
 }
 
@@ -60,7 +69,7 @@ export function setGeminiModel(model: string): void {
 /** Cheapest possible auth check: list models with the key. */
 export async function testGeminiKey(key: string): Promise<{ ok: boolean; message: string }> {
   try {
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1', {
+    const res = await fetch(`${GEMINI_BASE}/v1beta/models?pageSize=1`, {
       headers: { 'x-goog-api-key': key },
       signal: AbortSignal.timeout(10_000),
     });

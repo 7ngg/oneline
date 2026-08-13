@@ -190,50 +190,124 @@ export function placeOpenings(
     }
   }
 
-  // spanning doors until connected (BFS from the entrance room)
+  // Spanning doors via hub-routed shortest paths (NOT greedy longest-wall):
+  // traversal cost makes halls free corridors, living cheap, kitchens
+  // tolerable, and private rooms expensive — so bedrooms/bathrooms become
+  // LEAVES of the door tree and nobody walks through a bedroom to reach a
+  // bathroom unless geometry truly forces it (then it's flagged).
+  const transitCost = (roomId: string): number => {
+    const spec = specOf.get(specIdOf.get(roomId) ?? '');
+    switch (spec?.type) {
+      case 'hall':
+        return 0;
+      case 'living':
+        return 0.3;
+      case 'kitchen':
+      case 'other':
+        return 1.5;
+      default:
+        return 6; // bedrooms, bathrooms, wc, storage, balcony: transit of last resort
+    }
+  };
+
   const connectivityPass = (): void => {
-    const reachable = new Set<string>();
-    if (entrance) reachable.add(entrance.room.id);
-    let grew = true;
-    while (grew) {
-      grew = false;
-      for (const door of doors) {
-        const [a, b] = door.connects;
-        const aIn = a !== 'outside' && reachable.has(a);
-        const bIn = b !== 'outside' && reachable.has(b);
-        if (aIn && b !== 'outside' && !reachable.has(b)) {
-          reachable.add(b);
-          grew = true;
-        }
-        if (bIn && a !== 'outside' && !reachable.has(a)) {
-          reachable.add(a);
-          grew = true;
+    if (!entrance) return;
+    // candidate edges: every room pair with a door-able shared wall
+    interface Edge {
+      to: string;
+      wall: Wall;
+    }
+    const edges = new Map<string, Edge[]>();
+    for (const wall of walls) {
+      if (wall.kind !== 'interior' || !wall.leftRoomId || !wall.rightRoomId) continue;
+      if (wallLength(wall) < DOOR_MIN_WIDTH + 2 * DOOR_JAMB) continue;
+      edges.set(wall.leftRoomId, [...(edges.get(wall.leftRoomId) ?? []), { to: wall.rightRoomId, wall }]);
+      edges.set(wall.rightRoomId, [...(edges.get(wall.rightRoomId) ?? []), { to: wall.leftRoomId, wall }]);
+    }
+
+    // Dijkstra from the entrance room; existing doors (entrance, wishes) are
+    // free edges — they're already built
+    const dist = new Map<string, number>();
+    const parent = new Map<string, { from: string; wall: Wall | null }>();
+    const done = new Set<string>();
+    dist.set(entrance.room.id, 0);
+    while (true) {
+      let current: string | null = null;
+      let best = Infinity;
+      for (const [id, d] of dist) {
+        if (!done.has(id) && d < best) {
+          best = d;
+          current = id;
         }
       }
+      if (current === null) break;
+      done.add(current);
+      const through = transitCost(current);
+      const relax = (to: string, wall: Wall | null, extra: number) => {
+        const cand = best + through + extra;
+        if (cand < (dist.get(to) ?? Infinity)) {
+          dist.set(to, cand);
+          parent.set(to, { from: current as string, wall });
+        }
+      };
+      for (const door of doors) {
+        const [a, b] = door.connects;
+        if (a === current && b !== 'outside') relax(b, null, 0);
+        if (b === current && a !== 'outside') relax(a, null, 0);
+      }
+      for (const edge of edges.get(current) ?? []) {
+        relax(edge.to, edge.wall, 1);
+      }
     }
-    // connect the unreachable room with the longest wall to the reachable set
-    const unreachable = rooms.filter((r) => !reachable.has(r.id));
-    for (const room of unreachable) {
-      const candidates = walls
+
+    // materialize tree edges as doors, nearest rooms first
+    const order = [...dist.entries()].sort((a, b) => a[1] - b[1]).map(([id]) => id);
+    for (const roomId of order) {
+      const p = parent.get(roomId);
+      if (!p || p.wall === null) continue; // entrance room or already-doored edge
+      if (!doorExistsBetween(roomId, p.from) && !addDoor(p.wall, [roomId, p.from])) {
+        tryConnect(roomId, p.from);
+      }
+    }
+
+    // anything Dijkstra never reached has no door-able wall to the reachable
+    // set at all — fall back to ANY shared wall so validate/repair can report
+    for (const room of rooms) {
+      if (dist.has(room.id)) continue;
+      const fallback = walls
         .filter(
           (w) =>
             w.kind === 'interior' &&
-            ((w.leftRoomId === room.id && w.rightRoomId && reachable.has(w.rightRoomId)) ||
-              (w.rightRoomId === room.id && w.leftRoomId && reachable.has(w.leftRoomId))),
+            ((w.leftRoomId === room.id && w.rightRoomId) || (w.rightRoomId === room.id && w.leftRoomId)),
         )
         .sort((x, y) => wallLength(y) - wallLength(x));
-      for (const wall of candidates) {
+      for (const wall of fallback) {
         const other = wall.leftRoomId === room.id ? wall.rightRoomId : wall.leftRoomId;
-        if (other && addDoor(wall, [room.id, other])) {
-          reachable.add(room.id);
-          // rooms beyond this one may now be reachable; restart outer pass
-          connectivityPass();
-          return;
+        if (other && addDoor(wall, [room.id, other])) break;
+      }
+    }
+
+    // flag door paths that transit private rooms — geometry forced it
+    for (const roomId of order) {
+      let cursor = parent.get(roomId);
+      while (cursor) {
+        const throughSpec = specOf.get(specIdOf.get(cursor.from) ?? '');
+        if (cursor.from !== entrance.room.id && throughSpec && transitCost(cursor.from) >= 6) {
+          violations.push(
+            violation(
+              'PRIVATE_TRANSIT',
+              'warning',
+              `"${nameOf(roomId)}" is only reachable through "${throughSpec.name}" — no hallway connection fits.`,
+              [roomId, cursor.from],
+            ),
+          );
+          break;
         }
+        cursor = parent.get(cursor.from);
       }
     }
   };
-  if (entrance) connectivityPass();
+  connectivityPass();
 
   // --- windows ---
   const windows: Window[] = [];

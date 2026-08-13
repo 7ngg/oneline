@@ -33,6 +33,7 @@ export type ViolationCode =
   // plan output
   | 'DOOR_TOO_WIDE_FOR_WALL'
   | 'ROOM_UNREACHABLE'
+  | 'PRIVATE_TRANSIT'
   | 'ROOM_BELOW_MIN_AREA'
   | 'ROOM_MIN_DIM_VIOLATED'
   | 'ROOM_NO_EXTERIOR_WALL'

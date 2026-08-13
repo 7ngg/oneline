@@ -47,6 +47,7 @@ export { normalizeProgram } from './program/normalize';
 export * from './plot/types';
 export { validatePlot } from './plot/validate';
 export { computeFootprint } from './plot/footprint';
+export { synthesizePlot } from './plot/synthesize';
 
 // plan
 export * from './plan/types';

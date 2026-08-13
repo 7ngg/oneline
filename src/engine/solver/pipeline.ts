@@ -7,10 +7,12 @@
 import { area2OfPoly } from '../geometry/clip';
 import { ringBbox, type Poly } from '../geometry/polygon';
 import { rectFromBbox } from '../geometry/rect';
+import { lerp, type Vec } from '../geometry/vec';
 import { Rng } from '../rng';
 import { hasErrors, violation, type Violation } from '../violations';
 import type { PlanModel } from '../plan/types';
 import { postProcess } from '../plan/postprocess';
+import { aspectCapFor } from '../priors/priors';
 import { computeFootprint } from '../plot/footprint';
 import { validatePlot } from '../plot/validate';
 import type { Plot } from '../plot/types';
@@ -20,9 +22,11 @@ import { validateProgram } from '../program/validate';
 import { assignRooms, type Assignment } from './assign';
 import { checkFeasibility, type FeasibilityVerdict } from './feasibility';
 import { anneal } from './anneal';
+import { corridorFixture } from './corridor';
 import { selectDiverse } from './diversity';
 import { score, type ScoredTerms } from './scoring';
-import { fitRatios, randomTree, rectsToCells, treeToRects, type SlicingTree } from './slicing';
+import { assembleCells, fitRatios, randomTree, treeToRects, type SlicingTree } from './slicing';
+import { zonedRandomTree } from './zones';
 
 export interface GenerateRequest {
   program: Program;
@@ -60,10 +64,17 @@ export interface PipelineHooks {
 
 export interface Candidate {
   tree: SlicingTree;
+  /** roomIndex → leafIndex; -1 for rooms with a fixed (carved) cell. */
   assignment: Assignment;
   cells: (Poly | null)[];
   slivers: Poly[];
   terms: ScoredTerms;
+  /** Slicing region when it differs from the footprint (corridor carved out). */
+  region?: Poly;
+  /** Cells outside the slicing tree (e.g. the corridor), spliced by room index. */
+  fixedCells?: Array<{ roomIndex: number; cell: Poly }>;
+  /** roomIndex → zone rank; anneal swaps stay within a zone when present. */
+  zoneOfRoom?: number[];
 }
 
 export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): GenerateResult {
@@ -100,6 +111,22 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
   const rng = new Rng(req.seed);
   const rooms = program.rooms;
 
+  // entrance hint as a world point — feeds assignment bias + entrance scoring
+  const entranceVec: Vec | null = (() => {
+    if (!req.plot.entrance) return null;
+    const a = req.plot.boundary[req.plot.entrance.edgeIndex];
+    const b = req.plot.boundary[(req.plot.entrance.edgeIndex + 1) % req.plot.boundary.length];
+    return a && b ? lerp(a, b, req.plot.entrance.t) : null;
+  })();
+  const scoreCells = (cells: (Poly | null)[]) =>
+    score({
+      rooms,
+      cells,
+      adjacency: program.adjacency,
+      footprint,
+      ...(entranceVec ? { entrance: entranceVec } : {}),
+    });
+
   // single-room shortcut: the room IS the footprint
   if (rooms.length === 1) {
     const cell = footprint;
@@ -110,7 +137,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
       rooms,
       cells: [cell],
       slivers: [],
-      scoreTerms: score({ rooms, cells: [cell], adjacency: program.adjacency, footprint }) ?? emptyTerms(),
+      scoreTerms: scoreCells([cell]) ?? emptyTerms(),
       program,
       plot: req.plot,
     });
@@ -125,19 +152,16 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
   let cancelled = false;
   let timedOut = false;
 
-  const makeCandidate = (candidateRng: Rng, lenient: boolean): Candidate | null => {
-    const tree0 = randomTree(candidateRng, rooms.length);
-    const rects0 = treeToRects(tree0, bbox);
-    const assignment = assignRooms(rooms, rects0, footprint, candidateRng);
-    const targetOfLeaf: number[] = new Array<number>(rooms.length).fill(0);
-    assignment.forEach((leafIdx, roomIdx) => {
-      targetOfLeaf[leafIdx] = (rooms[roomIdx] as RoomSpec).area.ideal;
-    });
-    const tree = fitRatios(tree0, targetOfLeaf);
-    const rects = treeToRects(tree, bbox);
-    const { cells: cellsByLeaf, slivers } = rectsToCells(footprint, rects);
-    const cells: (Poly | null)[] = assignment.map((leafIdx) => cellsByLeaf[leafIdx] ?? null);
-
+  const gateAndScore = (
+    tree: SlicingTree,
+    assignment: number[],
+    region: Poly,
+    fixedCells: Array<{ roomIndex: number; cell: Poly }> | undefined,
+    zoneOfRoom: number[] | undefined,
+    lenient: boolean,
+  ): Candidate | null => {
+    const regionBbox = rectFromBbox(ringBbox(region.outer));
+    const { cells, slivers } = assembleCells(tree, assignment, region, regionBbox, fixedCells, rooms.length);
     const areaFloor = lenient ? 0.1 : 0.3;
     const dimFloor = lenient ? 0.3 : 0.5;
     for (let i = 0; i < rooms.length; i++) {
@@ -152,17 +176,110 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
         return null;
       }
       const cb = ringBbox(cell.outer);
-      if (Math.min(cb.maxX - cb.minX, cb.maxY - cb.minY) < room.minDim * dimFloor) {
+      const wSide = cb.maxX - cb.minX;
+      const hSide = cb.maxY - cb.minY;
+      if (Math.min(wSide, hSide) < room.minDim * dimFloor) {
+        discards.tooNarrow++;
+        return null;
+      }
+      // loose sanity gate at candidate birth — the annealer squares rooms up,
+      // so exploration needs slack; the REAL per-type cap applies at selection
+      if (Math.min(wSide, hSide) > 0 && Math.max(wSide, hSide) / Math.min(wSide, hSide) > (lenient ? 7 : 5)) {
         discards.tooNarrow++;
         return null;
       }
     }
-    const terms = score({ rooms, cells, adjacency: program.adjacency, footprint });
+    const terms = scoreCells(cells);
     if (!terms) {
       discards.nonFinite++;
       return null;
     }
-    return { tree, assignment, cells, slivers, terms };
+    return {
+      tree,
+      assignment,
+      cells,
+      slivers,
+      terms,
+      ...(region !== footprint ? { region } : {}),
+      ...(fixedCells && fixedCells.length > 0 ? { fixedCells } : {}),
+      ...(zoneOfRoom ? { zoneOfRoom } : {}),
+    };
+  };
+
+  const fitTargets = (tree: SlicingTree, assignment: number[], leafCount: number): SlicingTree => {
+    const targetOfLeaf: number[] = new Array<number>(leafCount).fill(0);
+    assignment.forEach((leafIdx, roomIdx) => {
+      if (leafIdx >= 0) targetOfLeaf[leafIdx] = (rooms[roomIdx] as RoomSpec).area.ideal;
+    });
+    return fitRatios(tree, targetOfLeaf);
+  };
+
+  // family A: unconstrained random slicing (the original generator)
+  const makeFree = (candidateRng: Rng, lenient: boolean): Candidate | null => {
+    const tree0 = randomTree(candidateRng, rooms.length);
+    const rects0 = treeToRects(tree0, bbox);
+    const assignment = assignRooms(rooms, rects0, footprint, candidateRng, 4, entranceVec);
+    return gateAndScore(fitTargets(tree0, assignment, rooms.length), assignment, footprint, undefined, undefined, lenient);
+  };
+
+  // family B: zone-first — top splits separate day/night/service wings
+  const makeZoned = (candidateRng: Rng, lenient: boolean): Candidate | null => {
+    const zoned = zonedRandomTree(candidateRng, rooms);
+    if (!zoned) return null;
+    const rects0 = treeToRects(zoned.tree, bbox);
+    const allowed = (roomIdx: number, leafIdx: number): boolean => {
+      const range = zoned.leafRangeOfRoom[roomIdx];
+      return range ? leafIdx >= range[0] && leafIdx <= range[1] : true;
+    };
+    const assignment = assignRooms(rooms, rects0, footprint, candidateRng, 4, entranceVec, allowed);
+    if (assignment.some((leafIdx, roomIdx) => !allowed(roomIdx, leafIdx))) return null;
+    return gateAndScore(
+      fitTargets(zoned.tree, assignment, rooms.length),
+      assignment,
+      footprint,
+      undefined,
+      zoned.zoneOfRoom,
+      lenient,
+    );
+  };
+
+  // family C: corridor-carved — the hall becomes a fixed strip from the
+  // entrance inward; remaining rooms slice the leftover region
+  const hallIndex = rooms.findIndex((r) => r.type === 'hall');
+  const makeCorridor = (candidateRng: Rng, lenient: boolean): Candidate | null => {
+    if (hallIndex < 0 || !entranceVec || rooms.length < 5) return null;
+    const fixture = corridorFixture(footprint, rooms[hallIndex] as RoomSpec, entranceVec, candidateRng);
+    if (!fixture) return null;
+    const subsetIdx = rooms.map((_, i) => i).filter((i) => i !== hallIndex);
+    const subsetRooms = subsetIdx.map((i) => rooms[i] as RoomSpec);
+    const tree0 = randomTree(candidateRng, subsetRooms.length);
+    const regionBbox = rectFromBbox(ringBbox(fixture.region.outer));
+    const rects0 = treeToRects(tree0, regionBbox);
+    const subAssign = assignRooms(subsetRooms, rects0, fixture.region, candidateRng, 4, entranceVec);
+    const assignment: number[] = new Array<number>(rooms.length).fill(-1);
+    subsetIdx.forEach((roomIdx, pos) => {
+      assignment[roomIdx] = subAssign[pos] ?? -1;
+    });
+    return gateAndScore(
+      fitTargets(tree0, assignment, subsetRooms.length),
+      assignment,
+      fixture.region,
+      [{ roomIndex: hallIndex, cell: fixture.hallCell }],
+      undefined,
+      lenient,
+    );
+  };
+
+  const makeCandidate = (candidateRng: Rng, family: number, lenient: boolean): Candidate | null => {
+    if (family === 2) return makeZoned(candidateRng, lenient) ?? makeFree(candidateRng, lenient);
+    if (family === 3) {
+      return (
+        makeCorridor(candidateRng, lenient) ??
+        makeZoned(candidateRng, lenient) ??
+        makeFree(candidateRng, lenient)
+      );
+    }
+    return makeFree(candidateRng, lenient);
   };
 
   for (let round = 0; round < 2 && candidates.length === 0; round++) {
@@ -176,7 +293,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
         timedOut = true;
         break;
       }
-      const candidate = makeCandidate(rng.fork(round * candidateCount + i), lenient);
+      const candidate = makeCandidate(rng.fork(round * candidateCount + i), i % 4, lenient);
       if (candidate) candidates.push(candidate);
       if (i % 8 === 0) {
         onProgress({
@@ -242,7 +359,7 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
         rooms,
         adjacency: program.adjacency,
         footprint,
-        bbox,
+        ...(entranceVec ? { entrance: entranceVec } : {}),
         rng: rng.fork(1_000 + i),
         iterations: annealIterations,
         shouldCancel,
@@ -269,9 +386,38 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
     );
   }
 
-  // 6. diverse selection
-  onProgress({ stage: 'finalize', done: 0, total: 1, bestScore: pool[0]?.terms.total ?? null });
-  const selected = selectDiverse(pool, rooms, req.k);
+  // 6. hard floors at selection: min-width AND per-type aspect (ResPlan p98
+  // + headroom). Band rooms and too-narrow rooms never ship when a compliant
+  // layout exists; ships-closest with a warning otherwise.
+  const meetsHardFloors = (candidate: Candidate): boolean =>
+    candidate.cells.every((cell, i) => {
+      if (!cell) return false;
+      const room = rooms[i] as RoomSpec;
+      const cb = ringBbox(cell.outer);
+      const wSide = cb.maxX - cb.minX;
+      const hSide = cb.maxY - cb.minY;
+      if (Math.min(wSide, hSide) < room.minDim * 0.95) return false;
+      if (Math.min(wSide, hSide) > 0 && Math.max(wSide, hSide) / Math.min(wSide, hSide) > aspectCapFor(room.type) * 1.15) {
+        return false;
+      }
+      return true;
+    });
+  const compliant = pool.filter(meetsHardFloors);
+  const selectable = compliant.length > 0 ? compliant : pool;
+  if (compliant.length === 0 && pool.length > 0) {
+    violations.push(
+      violation(
+        'MIN_DIM_UNSATISFIABLE',
+        'warning',
+        'No layout met every minimum room width and shape — showing the closest matches.',
+        ['program'],
+      ),
+    );
+  }
+
+  // 7. diverse selection
+  onProgress({ stage: 'finalize', done: 0, total: 1, bestScore: selectable[0]?.terms.total ?? null });
+  const selected = selectDiverse(selectable, rooms, req.k);
   if (selected.length < req.k) {
     violations.push(
       violation(
@@ -305,8 +451,12 @@ const emptyTerms = (): ScoredTerms => ({
   areaFit: 0,
   adjacency: 0,
   minDim: 0,
+  circulation: 0,
   aspect: 0,
   exposure: 0,
+  typicality: 0,
+  wetCluster: 0,
+  entrance: 0,
   orientation: 0,
   compactness: 0,
   total: 0,

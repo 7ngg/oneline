@@ -3,5 +3,6 @@ dist
 coverage
 .env.local
 .env.*.local
+deploy/.env
 *.log
 .DS_Store

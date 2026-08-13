@@ -6,15 +6,21 @@
 import { area2OfPoly } from '../geometry/clip';
 import { sharedBoundaryLength } from '../geometry/measure';
 import { polyBoundaryLength, ringBbox, type Poly } from '../geometry/polygon';
+import type { Vec } from '../geometry/vec';
+import { touchRate } from '../priors/priors';
 import { ROOM_TYPE_DEFAULTS } from '../program/defaults';
-import { DOOR_MIN_WIDTH, type AdjacencyRule, type RoomSpec } from '../program/types';
+import { DOOR_MIN_WIDTH, type AdjacencyRule, type RoomSpec, type RoomType } from '../program/types';
 
 export const SCORE_WEIGHTS = {
-  areaFit: 3,
+  areaFit: 3.5,
   adjacency: 2.5,
   minDim: 2,
+  circulation: 1.5,
   aspect: 1.5,
   exposure: 1.5,
+  typicality: 1.5,
+  wetCluster: 0.75,
+  entrance: 0.75,
   orientation: 0.75,
   compactness: 0.75,
 } as const;
@@ -23,8 +29,12 @@ export interface ScoredTerms {
   areaFit: number;
   adjacency: number;
   minDim: number;
+  circulation: number;
   aspect: number;
   exposure: number;
+  typicality: number;
+  wetCluster: number;
+  entrance: number;
   orientation: number;
   compactness: number;
   total: number;
@@ -35,7 +45,35 @@ export interface ScoreInput {
   cells: (Poly | null)[]; // room index → cell
   adjacency: AdjacencyRule[];
   footprint: Poly;
+  /** Entrance hint on the plot boundary (world mm), when the user set one. */
+  entrance?: Vec;
 }
+
+// Bathrooms/WCs stack on shared plumbing walls. Kitchens deliberately NOT
+// included: ResPlan shows kitchen|bathroom adjacency in only 33% of real
+// flats — the typicality term handles that pair from data instead.
+const WET_TYPES = new Set<RoomType>(['bathroom', 'wc']);
+/** Target exterior glazing run for a daylight room (graded, not binary). */
+const EXPOSURE_TARGET = 1_800;
+const WET_SHARE_MIN = 300;
+
+/**
+ * Area elasticity: when a plot has surplus area, WHO absorbs it. Stiff types
+ * (bathrooms, storage) go steeply negative past their max so the annealer
+ * actively shrinks them; elastic types (living, bedrooms) absorb overshoot
+ * almost free. Fixes "19 m² bathroom because the L-plot had leftovers".
+ */
+const STIFFNESS: Record<RoomType, number> = {
+  bathroom: 3,
+  wc: 3,
+  storage: 2.5,
+  kitchen: 1.5,
+  hall: 1.5,
+  bedroom: 0.8,
+  balcony: 1,
+  other: 0.75,
+  living: 0.4,
+};
 
 export function score(input: ScoreInput): ScoredTerms | null {
   const { rooms, cells, adjacency, footprint } = input;
@@ -60,8 +98,18 @@ export function score(input: ScoreInput): ScoredTerms | null {
     if (!cell) return { ...zeroTerms(), total: 0 };
     const gross = area2OfPoly(cell) / 2;
     const ideal = room.area.ideal;
-    let fit = Math.max(0, 1 - Math.abs(gross - ideal) / ideal);
-    if (gross < room.area.min || gross > room.area.max * 1.15) fit = 0;
+    const stiffness = STIFFNESS[room.type];
+    let fit: number;
+    if (gross < room.area.min) {
+      // below minimum: negative, scaled by how stiff the type is
+      fit = Math.max(-1.5, (gross / room.area.min - 1) * 2 * stiffness);
+    } else if (gross > room.area.max) {
+      // above maximum: elastic rooms barely mind, stiff rooms punished hard —
+      // this gradient is what steers surplus into living/bedrooms
+      fit = Math.max(-1.5, -((gross - room.area.max) / ideal) * stiffness);
+    } else {
+      fit = Math.max(0, 1 - Math.abs(gross - ideal) / ideal);
+    }
     areaFit += fit;
 
     const cb = ringBbox(cell.outer);
@@ -79,7 +127,8 @@ export function score(input: ScoreInput): ScoredTerms | null {
     const wantsExposure = room.prefs.exteriorWall ?? ROOM_TYPE_DEFAULTS[room.type].needsDaylight;
     if (wantsExposure) {
       exposureNeed += 1;
-      if (sharedBoundaryLength(cell, footprint) >= 1_000) exposureMet += 1;
+      // graded: full credit at EXPOSURE_TARGET mm of exterior contact
+      exposureMet += Math.min(1, sharedBoundaryLength(cell, footprint) / EXPOSURE_TARGET);
     }
     if (room.prefs.orientation) {
       orientationNeed += 1;
@@ -108,13 +157,112 @@ export function score(input: ScoreInput): ScoredTerms | null {
     if (rule.kind === 'avoid' ? !touching : touching) adjacencySatisfied += w;
   }
 
+  // --- circulation: every room needs a door-able wall to a circulation HUB
+  // (hall or living — the rooms that may legitimately be walked through).
+  // This is the score-time proxy for the door router's transit costs: a
+  // layout failing here WILL produce walk-through-bedroom paths, so it loses
+  // at selection instead of shipping flagged. Neutral without hubs.
+  const hubCells: Poly[] = [];
+  for (let i = 0; i < rooms.length; i++) {
+    const type = (rooms[i] as RoomSpec).type;
+    if (type === 'hall' || type === 'living') {
+      const cell = cells[i];
+      if (cell) hubCells.push(cell);
+    }
+  }
+  let circulation = 1;
+  if (hubCells.length > 0) {
+    let reached = 0;
+    let nonHub = 0;
+    for (let i = 0; i < rooms.length; i++) {
+      const type = (rooms[i] as RoomSpec).type;
+      if (type === 'hall' || type === 'living') continue;
+      nonHub += 1;
+      const cell = cells[i];
+      if (!cell) continue;
+      // must match the door router's requirement (width + jambs), not bare
+      // adjacency — a 750 mm shared wall "touches" but can't hold a door
+      if (hubCells.some((hub) => sharedBoundaryLength(cell, hub) >= DOOR_MIN_WIDTH + 200)) reached += 1;
+    }
+    circulation = nonHub > 0 ? reached / nonHub : 1;
+  }
+
+  // --- wet cluster: kitchens/bathrooms/wcs share walls (plumbing stacks).
+  // Fraction of wet rooms touching at least one other wet room; neutral with
+  // fewer than two wet rooms.
+  const wetIdx: number[] = [];
+  for (let i = 0; i < rooms.length; i++) {
+    if (WET_TYPES.has((rooms[i] as RoomSpec).type)) wetIdx.push(i);
+  }
+  let wetCluster = 1;
+  if (wetIdx.length >= 2) {
+    let clustered = 0;
+    for (const i of wetIdx) {
+      const a = cells[i];
+      if (!a) continue;
+      const touches = wetIdx.some((j) => {
+        if (j === i) return false;
+        const b = cells[j];
+        return b !== null && b !== undefined && sharedBoundaryLength(a, b) >= WET_SHARE_MIN;
+      });
+      if (touches) clustered += 1;
+    }
+    wetCluster = clustered / wetIdx.length;
+  }
+
+  // --- typicality: does this arrangement look like real flats? For every
+  // typed room pair with ResPlan data, score the touch/no-touch state by how
+  // often real plans agree. Confidence-weighted: a 98% pair counts harder
+  // than a 50/50 pair. Neutral without data.
+  let typicalityScore = 0;
+  let typicalityWeight = 0;
+  for (let i = 0; i < rooms.length; i++) {
+    for (let j = i + 1; j < rooms.length; j++) {
+      const rate = touchRate((rooms[i] as RoomSpec).type, (rooms[j] as RoomSpec).type);
+      if (rate === null) continue;
+      const a = cells[i];
+      const b = cells[j];
+      if (!a || !b) continue;
+      const touching = sharedBoundaryLength(a, b) >= DOOR_MIN_WIDTH;
+      const confidence = Math.abs(2 * rate - 1);
+      if (confidence < 0.2) continue; // 50/50 pairs teach nothing
+      typicalityScore += (touching ? rate : 1 - rate) * confidence;
+      typicalityWeight += confidence;
+    }
+  }
+  const typicality = typicalityWeight > 0 ? typicalityScore / typicalityWeight : 1;
+
+  // --- entrance anchoring: some hall (or nearEntrance room) should sit at
+  // the entrance. Distance from the entrance point to the nearest such room,
+  // full credit within 1.5 m, fading to 0 by 6.5 m. Neutral without an
+  // entrance hint or anchor-seeking rooms.
+  let entrance = 1;
+  if (input.entrance) {
+    const anchors: Poly[] = [];
+    for (let i = 0; i < rooms.length; i++) {
+      const room = rooms[i] as RoomSpec;
+      if (room.type === 'hall' || room.prefs.nearEntrance) {
+        const cell = cells[i];
+        if (cell) anchors.push(cell);
+      }
+    }
+    if (anchors.length > 0) {
+      const d = Math.min(...anchors.map((cell) => distanceToPoly(input.entrance as Vec, cell)));
+      entrance = Math.max(0, Math.min(1, 1 - (d - 1_500) / 5_000));
+    }
+  }
+
   const n = rooms.length;
   const terms: ScoredTerms = {
     areaFit: areaFit / n,
     adjacency: adjacencyWeight > 0 ? adjacencySatisfied / adjacencyWeight : 1,
     minDim: minDimTerm / n,
+    circulation,
     aspect: aspect / n,
     exposure: exposureNeed > 0 ? exposureMet / exposureNeed : 1,
+    typicality,
+    wetCluster,
+    entrance,
     orientation: orientationNeed > 0 ? orientationMet / orientationNeed : 1,
     compactness: compactness / n,
     total: 0,
@@ -128,16 +276,40 @@ export function score(input: ScoreInput): ScoredTerms | null {
     weighted += term * SCORE_WEIGHTS[key];
     weightSum += SCORE_WEIGHTS[key];
   }
-  terms.total = weighted / weightSum;
+  // areaFit can go negative now (elasticity gradient); keep total displayable
+  terms.total = Math.max(0, weighted / weightSum);
   return Number.isFinite(terms.total) ? terms : null;
+}
+
+/** Distance from a point to a polygon boundary (0 when inside). */
+function distanceToPoly(p: Vec, poly: Poly): number {
+  const ring = poly.outer;
+  let best = Infinity;
+  for (let i = 0; i < ring.length; i++) {
+    const a = ring[i] as Vec;
+    const b = ring[(i + 1) % ring.length] as Vec;
+    const len2 = (b.x - a.x) ** 2 + (b.y - a.y) ** 2;
+    let t = 0;
+    if (len2 > 0) {
+      t = Math.max(0, Math.min(1, ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / len2));
+    }
+    const qx = a.x + (b.x - a.x) * t;
+    const qy = a.y + (b.y - a.y) * t;
+    best = Math.min(best, Math.hypot(p.x - qx, p.y - qy));
+  }
+  return best;
 }
 
 const zeroTerms = (): Omit<ScoredTerms, 'total'> => ({
   areaFit: 0,
   adjacency: 0,
   minDim: 0,
+  circulation: 0,
   aspect: 0,
   exposure: 0,
+  typicality: 0,
+  wetCluster: 0,
+  entrance: 0,
   orientation: 0,
   compactness: 0,
 });

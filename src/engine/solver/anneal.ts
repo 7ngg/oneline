@@ -3,20 +3,20 @@
 // Cancellation/time are checked between fixed-size batches; the best-so-far
 // candidate is always returned, and the best-score stream is monotone.
 
-import type { Poly } from '../geometry/polygon';
-import type { Rect } from '../geometry/rect';
+import { ringBbox, type Poly } from '../geometry/polygon';
+import { rectFromBbox } from '../geometry/rect';
+import type { Vec } from '../geometry/vec';
 import type { Rng } from '../rng';
 import type { AdjacencyRule, RoomSpec } from '../program/types';
 import type { Candidate } from './pipeline';
 import { score } from './scoring';
 import {
+  assembleCells,
   internalNodePaths,
   mapNode,
   RATIO_MAX,
   RATIO_MIN,
-  rectsToCells,
   rotateAt,
-  treeToRects,
   type SlicingTree,
 } from './slicing';
 
@@ -25,7 +25,7 @@ export interface AnnealInput {
   rooms: RoomSpec[];
   adjacency: AdjacencyRule[];
   footprint: Poly;
-  bbox: Rect;
+  entrance?: Vec;
   rng: Rng;
   iterations: number;
   shouldCancel(): boolean;
@@ -36,21 +36,41 @@ export interface AnnealInput {
 const BATCH = 250;
 
 export function anneal(input: AnnealInput): Candidate {
-  const { rooms, adjacency, footprint, bbox, rng, iterations } = input;
+  const { rooms, adjacency, footprint, rng, iterations } = input;
 
   let current = input.candidate;
   let best = current;
   let temperature = 0.08;
   const cooling = Math.pow(0.02 / temperature, 1 / Math.max(1, iterations));
 
+  // corridor candidates slice a sub-region with the hall spliced in as a
+  // fixed cell; free/zoned candidates slice the whole footprint
+  const region = current.region ?? footprint;
+  const regionBbox = rectFromBbox(ringBbox(region.outer));
+  const fixedCells = current.fixedCells;
+  const zoneOfRoom = current.zoneOfRoom;
+
   const evaluate = (tree: SlicingTree, assignment: number[]): Candidate | null => {
-    const rects = treeToRects(tree, bbox);
-    const { cells: cellsByLeaf, slivers } = rectsToCells(footprint, rects);
-    const cells: (Poly | null)[] = assignment.map((leafIdx) => cellsByLeaf[leafIdx] ?? null);
+    const { cells, slivers } = assembleCells(tree, assignment, region, regionBbox, fixedCells, rooms.length);
     if (cells.some((c) => c === null)) return null;
-    const terms = score({ rooms, cells, adjacency, footprint });
+    const terms = score({
+      rooms,
+      cells,
+      adjacency,
+      footprint,
+      ...(input.entrance ? { entrance: input.entrance } : {}),
+    });
     if (!terms) return null;
-    return { tree, assignment, cells, slivers, terms };
+    return {
+      tree,
+      assignment,
+      cells,
+      slivers,
+      terms,
+      ...(current.region ? { region: current.region } : {}),
+      ...(fixedCells ? { fixedCells } : {}),
+      ...(zoneOfRoom ? { zoneOfRoom } : {}),
+    };
   };
 
   for (let i = 0; i < iterations; i++) {
@@ -76,37 +96,50 @@ export function anneal(input: AnnealInput): Candidate {
 }
 
 function mutate(candidate: Candidate, rng: Rng): { tree: SlicingTree; assignment: number[] } {
-  const move = rng.int(0, 3);
+  // ratio nudges are the primary area-fit lever — half of all moves;
+  // fine nudges polish, coarse nudges escape local optima
+  const move = rng.int(0, 5);
   const paths = internalNodePaths(candidate.tree);
-  if (move <= 1 && paths.length > 0) {
+  if (move <= 2 && paths.length > 0) {
     const path = rng.pick(paths);
-    if (move === 0) {
-      // ratio nudge
-      const delta = (rng.next() - 0.5) * 0.16;
-      return {
-        tree: mapNode(candidate.tree, path, (n) => ({
-          ...n,
-          ratio: Math.min(RATIO_MAX, Math.max(RATIO_MIN, n.ratio + delta)),
-        })),
-        assignment: candidate.assignment,
-      };
-    }
-    // direction flip
+    const magnitude = move === 0 ? 0.04 : 0.16;
+    const delta = (rng.next() - 0.5) * magnitude;
     return {
-      tree: mapNode(candidate.tree, path, (n) => ({ ...n, dir: n.dir === 'v' ? 'h' : 'v' })),
+      tree: mapNode(candidate.tree, path, (n) => ({
+        ...n,
+        ratio: Math.min(RATIO_MAX, Math.max(RATIO_MIN, n.ratio + delta)),
+      })),
       assignment: candidate.assignment,
     };
   }
-  if (move === 2 && candidate.assignment.length >= 2) {
-    // swap two room→leaf assignments
-    const a = rng.int(0, candidate.assignment.length - 1);
-    let b = rng.int(0, candidate.assignment.length - 1);
-    if (a === b) b = (b + 1) % candidate.assignment.length;
-    const assignment = [...candidate.assignment];
-    const tmp = assignment[a] as number;
-    assignment[a] = assignment[b] as number;
-    assignment[b] = tmp;
-    return { tree: candidate.tree, assignment };
+  if (move === 3 && paths.length > 0) {
+    // direction flip
+    return {
+      tree: mapNode(candidate.tree, rng.pick(paths), (n) => ({ ...n, dir: n.dir === 'v' ? 'h' : 'v' })),
+      assignment: candidate.assignment,
+    };
+  }
+  if (move === 4 && candidate.assignment.length >= 2) {
+    // swap two room→leaf assignments — never fixed cells, never across zones
+    const swappable = candidate.assignment
+      .map((leafIdx, roomIdx) => ({ leafIdx, roomIdx }))
+      .filter(({ leafIdx }) => leafIdx >= 0);
+    if (swappable.length >= 2) {
+      const first = rng.pick(swappable);
+      const partners = swappable.filter(
+        ({ roomIdx }) =>
+          roomIdx !== first.roomIdx &&
+          (!candidate.zoneOfRoom || candidate.zoneOfRoom[roomIdx] === candidate.zoneOfRoom[first.roomIdx]),
+      );
+      if (partners.length > 0) {
+        const second = rng.pick(partners);
+        const assignment = [...candidate.assignment];
+        assignment[first.roomIdx] = second.leafIdx;
+        assignment[second.roomIdx] = first.leafIdx;
+        return { tree: candidate.tree, assignment };
+      }
+    }
+    return { tree: candidate.tree, assignment: candidate.assignment };
   }
   if (paths.length > 0) {
     return { tree: rotateAt(candidate.tree, rng.pick(paths)), assignment: candidate.assignment };

@@ -120,6 +120,10 @@ const metricsSchema = z
     areaFitScore: z.number(),
     daylightScore: z.number(),
     totalScore: z.number(),
+    // added after first release — optional so older saves keep parsing
+    circulationScore: z.number().optional(),
+    wetClusterScore: z.number().optional(),
+    entranceScore: z.number().optional(),
   })
   .strict();
 

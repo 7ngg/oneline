@@ -1,0 +1,66 @@
+{
+  "source": "Derived statistics from ResPlan v1 (github.com/m-agour/ResPlan), data CC BY 4.0, 16,921 plans. Numbers only — no dataset content is redistributed.",
+  "plansUsed": 16921,
+  "flatAreaM2": { "p25": 87.1, "median": 109.3, "p75": 140.3 },
+  "wallDepthM": 0.225,
+  "types": {
+    "living": {
+      "areaP25": 30.9,
+      "areaMedian": 40.6,
+      "areaP75": 50.5,
+      "aspectMedian": 1.32,
+      "aspectP98": 2.54,
+      "exteriorRate": 0.992,
+      "shareOfFlat": 0.369
+    },
+    "kitchen": {
+      "areaP25": 8.4,
+      "areaMedian": 10.3,
+      "areaP75": 12.6,
+      "aspectMedian": 1.29,
+      "aspectP98": 2.14,
+      "exteriorRate": 0.982,
+      "shareOfFlat": 0.092
+    },
+    "bedroom": {
+      "areaP25": 16.2,
+      "areaMedian": 18.8,
+      "areaP75": 22.0,
+      "aspectMedian": 1.19,
+      "aspectP98": 1.72,
+      "exteriorRate": 0.984,
+      "shareOfFlat": 0.395
+    },
+    "bathroom": {
+      "areaP25": 3.9,
+      "areaMedian": 4.9,
+      "areaP75": 5.8,
+      "aspectMedian": 1.58,
+      "aspectP98": 2.54,
+      "exteriorRate": 0.973,
+      "shareOfFlat": 0.099
+    },
+    "balcony": {
+      "areaP25": 3.9,
+      "areaMedian": 5.4,
+      "areaP75": 7.6,
+      "aspectMedian": 2.35,
+      "aspectP98": 6.0,
+      "exteriorRate": null,
+      "shareOfFlat": 0.072
+    }
+  },
+  "pairTouchRate": {
+    "balcony|bathroom": 0.231,
+    "balcony|bedroom": 0.732,
+    "balcony|kitchen": 0.003,
+    "balcony|living": 0.484,
+    "bathroom|bedroom": 0.959,
+    "bathroom|kitchen": 0.333,
+    "bathroom|living": 0.95,
+    "bedroom|kitchen": 0.431,
+    "bedroom|living": 0.979,
+    "kitchen|living": 0.987
+  },
+  "entranceRoomShare": { "living": 0.996 }
+}

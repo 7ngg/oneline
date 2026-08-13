@@ -154,6 +154,32 @@ describe('generate pipeline', () => {
     }
   });
 
+  it('door tree routes through halls/living, not through private rooms', () => {
+    const PRIVATE = new Set(['bedroom', 'bathroom', 'wc', 'storage', 'balcony']);
+    for (const seed of [3, 11, 77]) {
+      const result = generate(request({ seed }));
+      for (const variant of result.variants) {
+        const typeOfRoom = (roomId: string): string => {
+          const planRoom = variant.rooms.find((r) => r.id === roomId);
+          const spec = twoBedProgram().rooms.find((s) => s.id === planRoom?.specId);
+          return spec?.type ?? 'other';
+        };
+        const flagged = new Set(
+          variant.violations.filter((v) => v.code === 'PRIVATE_TRANSIT').flatMap((v) => v.subjects),
+        );
+        for (const door of variant.doors) {
+          const [a, b] = door.connects;
+          if (b === 'outside' || a === 'outside') continue;
+          // a door between two PRIVATE rooms is only allowed when geometry
+          // forced it and the violation says so
+          if (PRIVATE.has(typeOfRoom(a)) && PRIVATE.has(typeOfRoom(b))) {
+            expect(flagged.has(a) || flagged.has(b)).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
   it('interior walls know both flanking rooms; exterior walls border outside', () => {
     const result = generate(request({ seed: 5 }));
     const variant = result.variants[0];

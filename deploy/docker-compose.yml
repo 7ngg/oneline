@@ -1,0 +1,23 @@
+# Run from the repo root:  docker compose -f deploy/docker-compose.yml up -d --build
+# Reads GEMINI_API_KEY and NGROK_AUTHTOKEN from deploy/.env (gitignored).
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?set GEMINI_API_KEY in deploy/.env}
+    # Port 80 is taken on this host, so the app is published on 8080.
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    # The public URL is printed to stdout; read it with `docker compose logs ngrok`.
+    command: http web:80 --log stdout
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?set NGROK_AUTHTOKEN in deploy/.env}
+    depends_on:
+      - web
+    restart: unless-stopped

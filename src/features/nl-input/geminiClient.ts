@@ -6,7 +6,7 @@
 
 import { parseNlDraft, type NlProgramDraft } from '../../engine/schemas/nl';
 import { NL_RESPONSE_SCHEMA } from '../../engine/schemas/nl';
-import { getGeminiKey, getGeminiModel } from '../settings/apiKeyStorage';
+import { GEMINI_BASE, getGeminiKey, getGeminiModel } from '../settings/apiKeyStorage';
 import { PROMPT_RULES } from './promptTemplate';
 
 export type NlResult =
@@ -36,7 +36,7 @@ export async function describeToDraft(userText: string): Promise<NlResult> {
       '\n---USER TEXT---\n' +
       userText.slice(0, NL_INPUT_MAX_CHARS);
     return fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+      `${GEMINI_BASE}/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       {
         method: 'POST',
         headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },

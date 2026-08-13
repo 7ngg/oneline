@@ -22,7 +22,15 @@ export interface PostProcessInput {
   rooms: RoomSpec[];
   cells: (Poly | null)[];
   slivers: Poly[];
-  scoreTerms: { areaFit: number; adjacency: number; exposure: number; total: number };
+  scoreTerms: {
+    areaFit: number;
+    adjacency: number;
+    exposure: number;
+    total: number;
+    circulation?: number;
+    wetCluster?: number;
+    entrance?: number;
+  };
   program: Program;
   plot: Plot;
 }
@@ -120,6 +128,9 @@ export function postProcess(input: PostProcessInput): PlanModel {
     areaFitScore: scoreTerms.areaFit,
     daylightScore: scoreTerms.exposure,
     totalScore: scoreTerms.total,
+    ...(scoreTerms.circulation !== undefined ? { circulationScore: scoreTerms.circulation } : {}),
+    ...(scoreTerms.wetCluster !== undefined ? { wetClusterScore: scoreTerms.wetCluster } : {}),
+    ...(scoreTerms.entrance !== undefined ? { entranceScore: scoreTerms.entrance } : {}),
   };
 
   const plan: PlanModel = {

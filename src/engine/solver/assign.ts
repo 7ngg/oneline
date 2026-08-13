@@ -4,6 +4,7 @@
 
 import { ringBbox, type Poly } from '../geometry/polygon';
 import { rectCenter, rectMinSide, type Rect } from '../geometry/rect';
+import type { Vec } from '../geometry/vec';
 import type { Rng } from '../rng';
 import type { RoomSpec } from '../program/types';
 
@@ -22,8 +23,12 @@ export function assignRooms(
   footprint: Poly,
   rng: Rng,
   restarts = 4,
+  entrance: Vec | null = null,
+  /** Optional zone constraint: room may only take leaves this returns true for. */
+  allowedLeaf: ((roomIdx: number, leafIdx: number) => boolean) | null = null,
 ): Assignment {
   const bb = ringBbox(footprint.outer);
+  const diag = Math.hypot(bb.maxX - bb.minX, bb.maxY - bb.minY) || 1;
   const leaves: LeafInfo[] = leafRects.map((rect) => {
     const c = rectCenter(rect);
     return {
@@ -58,6 +63,7 @@ export function assignRooms(
       let bestLeafCost = Infinity;
       for (let leafIdx = 0; leafIdx < leaves.length; leafIdx++) {
         if (taken.has(leafIdx)) continue;
+        if (allowedLeaf && !allowedLeaf(roomIdx, leafIdx)) continue;
         const leaf = leaves[leafIdx] as LeafInfo;
         const leafArea = leaf.rect.w * leaf.rect.h * 2;
         const areaCost = Math.abs(leafArea - room.area.ideal * 2) / (room.area.ideal * 2);
@@ -72,6 +78,12 @@ export function assignRooms(
           if (!match) prefCost += 0.3;
         }
         if (rectMinSide(leaf.rect) < room.minDim) prefCost += 0.8;
+        // halls and near-entrance rooms gravitate to the entrance point —
+        // seeds the search toward hall-anchored layouts instead of hoping
+        // the annealer stumbles into them
+        if (entrance && (room.type === 'hall' || room.prefs.nearEntrance)) {
+          prefCost += (Math.hypot(leaf.cx - entrance.x, leaf.cy - entrance.y) / diag) * 0.5;
+        }
         const jitter = rng.next() * 0.05;
         const total = areaCost + prefCost + jitter;
         if (total < bestLeafCost) {

@@ -98,6 +98,36 @@ export function treeToRects(tree: SlicingTree, bbox: Rect): Rect[] {
 }
 
 /**
+ * Assemble the per-room cell array for a candidate: evaluate the tree over
+ * the slicing REGION (footprint minus any fixed cells), then splice fixed
+ * cells (e.g. a carved corridor) back in at their room indices. Shared by
+ * candidate generation and the annealer so both stay byte-identical.
+ */
+export function assembleCells(
+  tree: SlicingTree,
+  assignment: number[],
+  region: Poly,
+  regionBbox: Rect,
+  fixedCells: Array<{ roomIndex: number; cell: Poly }> | undefined,
+  roomCount: number,
+): { cells: (Poly | null)[]; slivers: Poly[] } {
+  const rects = treeToRects(tree, regionBbox);
+  const { cells: byLeaf, slivers } = rectsToCells(region, rects);
+  const fixedByRoom = new Map<number, Poly>((fixedCells ?? []).map((f) => [f.roomIndex, f.cell]));
+  const cells: (Poly | null)[] = [];
+  for (let i = 0; i < roomCount; i++) {
+    const fixed = fixedByRoom.get(i);
+    if (fixed) {
+      cells.push(fixed);
+      continue;
+    }
+    const leafIdx = assignment[i] ?? -1;
+    cells.push(leafIdx >= 0 ? (byLeaf[leafIdx] ?? null) : null);
+  }
+  return { cells, slivers };
+}
+
+/**
  * Clip leaf rects to the footprint. A leaf may produce several fragments on
  * concave footprints — the largest fragment is the room cell; other fragments
  * are returned as slivers for the repair stage to absorb.

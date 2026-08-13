@@ -31,26 +31,26 @@
           "poly": {
             "outer": [
               {
-                "x": 6450,
+                "x": 8000,
                 "y": 6000
               },
               {
-                "x": 0,
+                "x": 1530,
                 "y": 6000
               },
               {
-                "x": 0,
+                "x": 1530,
                 "y": 0
               },
               {
-                "x": 6450,
+                "x": 8000,
                 "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 38700000,
-          "netArea": 35565000
+          "grossArea": 38820000,
+          "netArea": 35679000
         },
         {
           "id": "v1x0-r1",
@@ -58,26 +58,26 @@
           "poly": {
             "outer": [
               {
-                "x": 8000,
+                "x": 1530,
                 "y": 6000
               },
               {
-                "x": 6450,
+                "x": 0,
                 "y": 6000
               },
               {
-                "x": 6450,
-                "y": 2530
+                "x": 0,
+                "y": 2640
               },
               {
-                "x": 8000,
-                "y": 2530
+                "x": 1530,
+                "y": 2640
               }
             ],
             "holes": []
           },
-          "grossArea": 5378500,
-          "netArea": 4374500
+          "grossArea": 5140800,
+          "netArea": 4162800
         },
         {
           "id": "v1x0-r2",
@@ -85,58 +85,58 @@
           "poly": {
             "outer": [
               {
-                "x": 8000,
-                "y": 2530
+                "x": 1530,
+                "y": 2640
               },
               {
-                "x": 6450,
-                "y": 2530
+                "x": 0,
+                "y": 2640
               },
               {
-                "x": 6450,
+                "x": 0,
                 "y": 0
               },
               {
-                "x": 8000,
+                "x": 1530,
                 "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 3921500,
-          "netArea": 3105500
+          "grossArea": 4039200,
+          "netArea": 3205200
         }
       ],
       "walls": [
         {
           "id": "w0",
           "a": {
-            "x": 6450,
+            "x": 1530,
             "y": 0
           },
           "b": {
-            "x": 6450,
-            "y": 2530
+            "x": 1530,
+            "y": 2640
           },
           "thickness": 100,
           "kind": "interior",
-          "leftRoomId": "v1x0-r0",
-          "rightRoomId": "v1x0-r2"
+          "leftRoomId": "v1x0-r2",
+          "rightRoomId": "v1x0-r0"
         },
         {
           "id": "w1",
           "a": {
-            "x": 6450,
-            "y": 2530
+            "x": 1530,
+            "y": 2640
           },
           "b": {
-            "x": 6450,
+            "x": 1530,
             "y": 6000
           },
           "thickness": 100,
           "kind": "interior",
-          "leftRoomId": "v1x0-r0",
-          "rightRoomId": "v1x0-r1"
+          "leftRoomId": "v1x0-r1",
+          "rightRoomId": "v1x0-r0"
         },
         {
           "id": "w2",
@@ -146,33 +146,33 @@
           },
           "b": {
             "x": 8000,
-            "y": 2530
+            "y": 6000
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v1x0-r2",
+          "leftRoomId": "v1x0-r0",
           "rightRoomId": null
         },
         {
           "id": "w3",
           "a": {
-            "x": 8000,
-            "y": 2530
+            "x": 0,
+            "y": 0
           },
           "b": {
-            "x": 8000,
-            "y": 6000
+            "x": 0,
+            "y": 2640
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v1x0-r1",
-          "rightRoomId": null
+          "leftRoomId": null,
+          "rightRoomId": "v1x0-r2"
         },
         {
           "id": "w4",
           "a": {
             "x": 0,
-            "y": 0
+            "y": 2640
           },
           "b": {
             "x": 0,
@@ -181,7 +181,7 @@
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v1x0-r0"
+          "rightRoomId": "v1x0-r1"
         },
         {
           "id": "w5",
@@ -190,22 +190,7 @@
             "y": 0
           },
           "b": {
-            "x": 6450,
-            "y": 0
-          },
-          "thickness": 300,
-          "kind": "exterior",
-          "leftRoomId": "v1x0-r0",
-          "rightRoomId": null
-        },
-        {
-          "id": "w6",
-          "a": {
-            "x": 6450,
-            "y": 0
-          },
-          "b": {
-            "x": 8000,
+            "x": 1530,
             "y": 0
           },
           "thickness": 300,
@@ -214,14 +199,29 @@
           "rightRoomId": null
         },
         {
-          "id": "w7",
+          "id": "w6",
           "a": {
-            "x": 6450,
-            "y": 2530
+            "x": 1530,
+            "y": 0
           },
           "b": {
             "x": 8000,
-            "y": 2530
+            "y": 0
+          },
+          "thickness": 300,
+          "kind": "exterior",
+          "leftRoomId": "v1x0-r0",
+          "rightRoomId": null
+        },
+        {
+          "id": "w7",
+          "a": {
+            "x": 0,
+            "y": 2640
+          },
+          "b": {
+            "x": 1530,
+            "y": 2640
           },
           "thickness": 100,
           "kind": "interior",
@@ -235,18 +235,18 @@
             "y": 6000
           },
           "b": {
-            "x": 6450,
+            "x": 1530,
             "y": 6000
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v1x0-r0"
+          "rightRoomId": "v1x0-r1"
         },
         {
           "id": "w9",
           "a": {
-            "x": 6450,
+            "x": 1530,
             "y": 6000
           },
           "b": {
@@ -256,14 +256,14 @@
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v1x0-r1"
+          "rightRoomId": "v1x0-r0"
         }
       ],
       "doors": [
         {
           "id": "d0",
-          "wallId": "w6",
-          "t0": 0.20967741935483872,
+          "wallId": "w5",
+          "t0": 0.20588235294117646,
           "width": 900,
           "swing": "left",
           "connects": [
@@ -274,7 +274,7 @@
         {
           "id": "d1",
           "wallId": "w7",
-          "t0": 0.20967741935483872,
+          "t0": 0.20588235294117646,
           "width": 900,
           "swing": "left",
           "connects": [
@@ -284,43 +284,37 @@
         },
         {
           "id": "d2",
-          "wallId": "w1",
-          "t0": 0.3703170028818444,
+          "wallId": "w0",
+          "t0": 0.32954545454545453,
           "width": 900,
           "swing": "right",
           "connects": [
             "v1x0-r0",
-            "v1x0-r1"
+            "v1x0-r2"
           ]
         }
       ],
       "windows": [
         {
           "id": "n0",
-          "wallId": "w5",
-          "t0": 0.4069767441860465,
+          "wallId": "w6",
+          "t0": 0.4072642967542504,
           "width": 1200
         }
       ],
-      "violations": [
-        {
-          "code": "ENTRANCE_MOVED",
-          "severity": "info",
-          "message": "The entrance was placed 4.8 m from your marker to land on a suitable wall.",
-          "subjects": [
-            "v1x0-r2"
-          ]
-        }
-      ],
+      "violations": [],
       "metrics": {
         "grossFloorArea": 48000000,
-        "netRoomArea": 43045000,
-        "circulationArea": 3105500,
-        "efficiency": 0.8967708333333333,
+        "netRoomArea": 43047000,
+        "circulationArea": 3205200,
+        "efficiency": 0.8968125,
         "adjacencyScore": 1,
-        "areaFitScore": 0.715194696969697,
+        "areaFitScore": 0.7324981818181818,
         "daylightScore": 1,
-        "totalScore": 0.8897357000700127
+        "totalScore": 0.9121680495133653,
+        "circulationScore": 1,
+        "wetClusterScore": 1,
+        "entranceScore": 1
       }
     },
     {
@@ -354,26 +348,26 @@
           "poly": {
             "outer": [
               {
-                "x": 8000,
+                "x": 6390,
                 "y": 6000
               },
               {
-                "x": 1690,
+                "x": 0,
                 "y": 6000
               },
               {
-                "x": 1690,
+                "x": 0,
                 "y": 0
               },
               {
-                "x": 8000,
+                "x": 6390,
                 "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 37860000,
-          "netArea": 34767000
+          "grossArea": 38340000,
+          "netArea": 35223000
         },
         {
           "id": "v1x1-r1",
@@ -381,26 +375,26 @@
           "poly": {
             "outer": [
               {
-                "x": 1690,
-                "y": 6000
+                "x": 8000,
+                "y": 3460
               },
               {
-                "x": 0,
-                "y": 6000
+                "x": 6390,
+                "y": 3460
               },
               {
-                "x": 0,
-                "y": 2430
+                "x": 6390,
+                "y": 0
               },
               {
-                "x": 1690,
-                "y": 2430
+                "x": 8000,
+                "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 6033300,
-          "netArea": 4981300
+          "grossArea": 5570600,
+          "netArea": 4556600
         },
         {
           "id": "v1x1-r2",
@@ -408,58 +402,58 @@
           "poly": {
             "outer": [
               {
-                "x": 1690,
-                "y": 2430
+                "x": 8000,
+                "y": 6000
               },
               {
-                "x": 0,
-                "y": 2430
+                "x": 6390,
+                "y": 6000
               },
               {
-                "x": 0,
-                "y": 0
+                "x": 6390,
+                "y": 3460
               },
               {
-                "x": 1690,
-                "y": 0
+                "x": 8000,
+                "y": 3460
               }
             ],
             "holes": []
           },
-          "grossArea": 4106700,
-          "netArea": 3282700
+          "grossArea": 4089400,
+          "netArea": 3259400
         }
       ],
       "walls": [
         {
           "id": "w0",
           "a": {
-            "x": 1690,
+            "x": 6390,
             "y": 0
           },
           "b": {
-            "x": 1690,
-            "y": 2430
+            "x": 6390,
+            "y": 3460
           },
           "thickness": 100,
           "kind": "interior",
-          "leftRoomId": "v1x1-r2",
-          "rightRoomId": "v1x1-r0"
+          "leftRoomId": "v1x1-r0",
+          "rightRoomId": "v1x1-r1"
         },
         {
           "id": "w1",
           "a": {
-            "x": 1690,
-            "y": 2430
+            "x": 6390,
+            "y": 3460
           },
           "b": {
-            "x": 1690,
+            "x": 6390,
             "y": 6000
           },
           "thickness": 100,
           "kind": "interior",
-          "leftRoomId": "v1x1-r1",
-          "rightRoomId": "v1x1-r0"
+          "leftRoomId": "v1x1-r0",
+          "rightRoomId": "v1x1-r2"
         },
         {
           "id": "w2",
@@ -469,42 +463,42 @@
           },
           "b": {
             "x": 8000,
-            "y": 6000
+            "y": 3460
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v1x1-r0",
+          "leftRoomId": "v1x1-r1",
           "rightRoomId": null
         },
         {
           "id": "w3",
+          "a": {
+            "x": 8000,
+            "y": 3460
+          },
+          "b": {
+            "x": 8000,
+            "y": 6000
+          },
+          "thickness": 300,
+          "kind": "exterior",
+          "leftRoomId": "v1x1-r2",
+          "rightRoomId": null
+        },
+        {
+          "id": "w4",
           "a": {
             "x": 0,
             "y": 0
           },
           "b": {
             "x": 0,
-            "y": 2430
-          },
-          "thickness": 300,
-          "kind": "exterior",
-          "leftRoomId": null,
-          "rightRoomId": "v1x1-r2"
-        },
-        {
-          "id": "w4",
-          "a": {
-            "x": 0,
-            "y": 2430
-          },
-          "b": {
-            "x": 0,
             "y": 6000
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v1x1-r1"
+          "rightRoomId": "v1x1-r0"
         },
         {
           "id": "w5",
@@ -513,22 +507,7 @@
             "y": 0
           },
           "b": {
-            "x": 1690,
-            "y": 0
-          },
-          "thickness": 300,
-          "kind": "exterior",
-          "leftRoomId": "v1x1-r2",
-          "rightRoomId": null
-        },
-        {
-          "id": "w6",
-          "a": {
-            "x": 1690,
-            "y": 0
-          },
-          "b": {
-            "x": 8000,
+            "x": 6390,
             "y": 0
           },
           "thickness": 300,
@@ -537,19 +516,34 @@
           "rightRoomId": null
         },
         {
-          "id": "w7",
+          "id": "w6",
           "a": {
-            "x": 0,
-            "y": 2430
+            "x": 6390,
+            "y": 0
           },
           "b": {
-            "x": 1690,
-            "y": 2430
+            "x": 8000,
+            "y": 0
+          },
+          "thickness": 300,
+          "kind": "exterior",
+          "leftRoomId": "v1x1-r1",
+          "rightRoomId": null
+        },
+        {
+          "id": "w7",
+          "a": {
+            "x": 6390,
+            "y": 3460
+          },
+          "b": {
+            "x": 8000,
+            "y": 3460
           },
           "thickness": 100,
           "kind": "interior",
-          "leftRoomId": "v1x1-r1",
-          "rightRoomId": "v1x1-r2"
+          "leftRoomId": "v1x1-r2",
+          "rightRoomId": "v1x1-r1"
         },
         {
           "id": "w8",
@@ -558,18 +552,18 @@
             "y": 6000
           },
           "b": {
-            "x": 1690,
+            "x": 6390,
             "y": 6000
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v1x1-r1"
+          "rightRoomId": "v1x1-r0"
         },
         {
           "id": "w9",
           "a": {
-            "x": 1690,
+            "x": 6390,
             "y": 6000
           },
           "b": {
@@ -579,14 +573,14 @@
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v1x1-r0"
+          "rightRoomId": "v1x1-r2"
         }
       ],
       "doors": [
         {
           "id": "d0",
-          "wallId": "w5",
-          "t0": 0.23372781065088757,
+          "wallId": "w3",
+          "t0": 0.3228346456692913,
           "width": 900,
           "swing": "left",
           "connects": [
@@ -597,9 +591,9 @@
         {
           "id": "d1",
           "wallId": "w7",
-          "t0": 0.23372781065088757,
+          "t0": 0.2204968944099379,
           "width": 900,
-          "swing": "left",
+          "swing": "right",
           "connects": [
             "v1x1-r2",
             "v1x1-r1"
@@ -608,33 +602,45 @@
         {
           "id": "d2",
           "wallId": "w1",
-          "t0": 0.3739495798319328,
+          "t0": 0.3228346456692913,
           "width": 900,
           "swing": "left",
           "connects": [
             "v1x1-r0",
-            "v1x1-r1"
+            "v1x1-r2"
           ]
         }
       ],
       "windows": [
         {
           "id": "n0",
-          "wallId": "w6",
-          "t0": 0.40491283676703643,
+          "wallId": "w5",
+          "t0": 0.4061032863849765,
           "width": 1200
         }
       ],
-      "violations": [],
+      "violations": [
+        {
+          "code": "ENTRANCE_MOVED",
+          "severity": "info",
+          "message": "The entrance was placed 7.3 m from your marker to land on a suitable wall.",
+          "subjects": [
+            "v1x1-r2"
+          ]
+        }
+      ],
       "metrics": {
         "grossFloorArea": 48000000,
-        "netRoomArea": 43031000,
-        "circulationArea": 3282700,
-        "efficiency": 0.8964791666666667,
+        "netRoomArea": 43039000,
+        "circulationArea": 3259400,
+        "efficiency": 0.8966458333333334,
         "adjacencyScore": 1,
-        "areaFitScore": 0.6819186363636364,
+        "areaFitScore": 0.7069342424242424,
         "daylightScore": 1,
-        "totalScore": 0.8884179251953302
+        "totalScore": 0.8765385262313887,
+        "circulationScore": 1,
+        "wetClusterScore": 1,
+        "entranceScore": 0.24374813609631907
       }
     },
     {
@@ -668,7 +674,7 @@
           "poly": {
             "outer": [
               {
-                "x": 4740,
+                "x": 5860,
                 "y": 6000
               },
               {
@@ -680,14 +686,14 @@
                 "y": 0
               },
               {
-                "x": 4740,
+                "x": 5860,
                 "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 28440000,
-          "netArea": 25818000
+          "grossArea": 35160000,
+          "netArea": 32202000
         },
         {
           "id": "v1x2-r1",
@@ -696,25 +702,25 @@
             "outer": [
               {
                 "x": 8000,
-                "y": 1580
+                "y": 6000
               },
               {
-                "x": 4740,
-                "y": 1580
+                "x": 5860,
+                "y": 6000
               },
               {
-                "x": 4740,
-                "y": 0
+                "x": 5860,
+                "y": 2860
               },
               {
                 "x": 8000,
-                "y": 0
+                "y": 2860
               }
             ],
             "holes": []
           },
-          "grossArea": 5150800,
-          "netArea": 4182800
+          "grossArea": 6719600,
+          "netArea": 5663600
         },
         {
           "id": "v1x2-r2",
@@ -723,57 +729,57 @@
             "outer": [
               {
                 "x": 8000,
-                "y": 6000
+                "y": 2860
               },
               {
-                "x": 4740,
-                "y": 6000
+                "x": 5860,
+                "y": 2860
               },
               {
-                "x": 4740,
-                "y": 1580
+                "x": 5860,
+                "y": 0
               },
               {
                 "x": 8000,
-                "y": 1580
+                "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 14409200,
-          "netArea": 12873200
+          "grossArea": 6120400,
+          "netArea": 5120400
         }
       ],
       "walls": [
         {
           "id": "w0",
           "a": {
-            "x": 4740,
+            "x": 5860,
             "y": 0
           },
           "b": {
-            "x": 4740,
-            "y": 1580
-          },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v1x2-r0",
-          "rightRoomId": "v1x2-r1"
-        },
-        {
-          "id": "w1",
-          "a": {
-            "x": 4740,
-            "y": 1580
-          },
-          "b": {
-            "x": 4740,
-            "y": 6000
+            "x": 5860,
+            "y": 2860
           },
           "thickness": 100,
           "kind": "interior",
           "leftRoomId": "v1x2-r0",
           "rightRoomId": "v1x2-r2"
+        },
+        {
+          "id": "w1",
+          "a": {
+            "x": 5860,
+            "y": 2860
+          },
+          "b": {
+            "x": 5860,
+            "y": 6000
+          },
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v1x2-r0",
+          "rightRoomId": "v1x2-r1"
         },
         {
           "id": "w2",
@@ -783,18 +789,18 @@
           },
           "b": {
             "x": 8000,
-            "y": 1580
+            "y": 2860
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v1x2-r1",
+          "leftRoomId": "v1x2-r2",
           "rightRoomId": null
         },
         {
           "id": "w3",
           "a": {
             "x": 8000,
-            "y": 1580
+            "y": 2860
           },
           "b": {
             "x": 8000,
@@ -802,7 +808,7 @@
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v1x2-r2",
+          "leftRoomId": "v1x2-r1",
           "rightRoomId": null
         },
         {
@@ -827,7 +833,7 @@
             "y": 0
           },
           "b": {
-            "x": 4740,
+            "x": 5860,
             "y": 0
           },
           "thickness": 300,
@@ -838,7 +844,7 @@
         {
           "id": "w6",
           "a": {
-            "x": 4740,
+            "x": 5860,
             "y": 0
           },
           "b": {
@@ -847,23 +853,23 @@
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v1x2-r1",
+          "leftRoomId": "v1x2-r2",
           "rightRoomId": null
         },
         {
           "id": "w7",
           "a": {
-            "x": 4740,
-            "y": 1580
+            "x": 5860,
+            "y": 2860
           },
           "b": {
             "x": 8000,
-            "y": 1580
+            "y": 2860
           },
           "thickness": 100,
           "kind": "interior",
-          "leftRoomId": "v1x2-r2",
-          "rightRoomId": "v1x2-r1"
+          "leftRoomId": "v1x2-r1",
+          "rightRoomId": "v1x2-r2"
         },
         {
           "id": "w8",
@@ -872,7 +878,7 @@
             "y": 6000
           },
           "b": {
-            "x": 4740,
+            "x": 5860,
             "y": 6000
           },
           "thickness": 300,
@@ -883,7 +889,7 @@
         {
           "id": "w9",
           "a": {
-            "x": 4740,
+            "x": 5860,
             "y": 6000
           },
           "b": {
@@ -893,14 +899,14 @@
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v1x2-r2"
+          "rightRoomId": "v1x2-r1"
         }
       ],
       "doors": [
         {
           "id": "d0",
-          "wallId": "w3",
-          "t0": 0.39819004524886875,
+          "wallId": "w6",
+          "t0": 0.2897196261682243,
           "width": 900,
           "swing": "left",
           "connects": [
@@ -911,9 +917,9 @@
         {
           "id": "d1",
           "wallId": "w7",
-          "t0": 0.3619631901840491,
+          "t0": 0.2897196261682243,
           "width": 900,
-          "swing": "right",
+          "swing": "left",
           "connects": [
             "v1x2-r2",
             "v1x2-r1"
@@ -921,8 +927,8 @@
         },
         {
           "id": "d2",
-          "wallId": "w1",
-          "t0": 0.39819004524886875,
+          "wallId": "w0",
+          "t0": 0.34265734265734266,
           "width": 900,
           "swing": "left",
           "connects": [
@@ -943,7 +949,7 @@
         {
           "code": "ENTRANCE_MOVED",
           "severity": "info",
-          "message": "The entrance was placed 6.8 m from your marker to land on a suitable wall.",
+          "message": "The entrance was placed 4.5 m from your marker to land on a suitable wall.",
           "subjects": [
             "v1x2-r2"
           ]
@@ -951,13 +957,16 @@
       ],
       "metrics": {
         "grossFloorArea": 48000000,
-        "netRoomArea": 42874000,
-        "circulationArea": 12873200,
-        "efficiency": 0.8932083333333334,
+        "netRoomArea": 42986000,
+        "circulationArea": 5120400,
+        "efficiency": 0.8955416666666667,
         "adjacencyScore": 1,
-        "areaFitScore": 0.5590375757575757,
+        "areaFitScore": 0.5092660606060606,
         "daylightScore": 1,
-        "totalScore": 0.8561694258179332
+        "totalScore": 0.8657756463663201,
+        "circulationScore": 1,
+        "wetClusterScore": 1,
+        "entranceScore": 0.608
       }
     }
   ],

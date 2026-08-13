@@ -52,6 +52,10 @@ export interface Metrics {
   areaFitScore: number;
   daylightScore: number;
   totalScore: number;
+  /** Optional (added later; absent in older saves). */
+  circulationScore?: number;
+  wetClusterScore?: number;
+  entranceScore?: number;
 }
 
 export interface PlanModel {

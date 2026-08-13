@@ -70,7 +70,8 @@ function PlotHint() {
     <div className="stack">
       <p className="soft">
         Draw the plot boundary in the canvas: click to place corners, click the first corner to close. Shift-drag
-        pans, scroll zooms.
+        pans, scroll zooms. Drawing a plot is optional — with none drawn, Generate invents one sized to your
+        rooms.
       </p>
       <label className="check">
         units

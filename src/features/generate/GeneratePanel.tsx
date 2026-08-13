@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import type { GenerateResult, Violation } from '../../engine';
-import { validatePlot, validateProgram } from '../../engine';
+import { synthesizePlot, validatePlot, validateProgram } from '../../engine';
 import { applyRelaxation } from '../../lib/relaxation';
 import { useApp } from '../../state/store';
 import { solverClient } from '../../worker/client';
@@ -14,6 +14,7 @@ const BUDGET_MS = 8_000;
 export function GeneratePanel() {
   const program = useApp((s) => s.program);
   const plot = useApp((s) => s.plot);
+  const setPlot = useApp((s) => s.setPlot);
   const solver = useApp((s) => s.solver);
   const setSolver = useApp((s) => s.setSolver);
   const setVariants = useApp((s) => s.setVariants);
@@ -21,17 +22,23 @@ export function GeneratePanel() {
   const [seedText, setSeedText] = useState(() => String(generation?.seed ?? 42));
   const [showRelaxations, setShowRelaxations] = useState(false);
 
-  const inputErrors = [...validateProgram(program), ...validatePlot(plot)].filter(
-    (v) => v.severity === 'error',
-  );
+  // no plot drawn = "free imagination": the app invents one sized to the
+  // program, so plot errors only block generation when a plot actually exists
+  const noPlot = plot.boundary.length === 0;
+  const inputErrors = [
+    ...validateProgram(program),
+    ...(noPlot ? [] : validatePlot(plot)),
+  ].filter((v) => v.severity === 'error');
   const canGenerate = inputErrors.length === 0 && !solver.running;
 
   const run = async (seed: number) => {
     setSolver({ running: true, progress: 0, stage: 'starting', violations: [], feasibility: null });
     setShowRelaxations(false);
+    const plotToUse = noPlot ? synthesizePlot(program, seed) : plot;
+    if (noPlot) setPlot(plotToUse); // lands in the Plot tab, editable like a drawn one
     try {
       const result: GenerateResult = await solverClient.run(
-        { program, plot, seed, k: K, budgetMs: BUDGET_MS },
+        { program, plot: plotToUse, seed, k: K, budgetMs: BUDGET_MS },
         (p) =>
           setSolver({
             progress: p.total > 0 ? p.done / p.total : 0,
@@ -101,6 +108,18 @@ export function GeneratePanel() {
             </p>
           ))}
         </div>
+      )}
+
+      {noPlot && program.rooms.length > 0 && (
+        <p className="inline-violation info">
+          No plot drawn — a ~
+          {Math.round(
+            (program.rooms.reduce((s, r) => s + r.area.ideal, 0) * (1 + program.circulation.factor) * 1.12) /
+              1_000_000,
+          )}{' '}
+          m² plot will be invented to fit the rooms. Draw one in the Plot tab whenever you want control; the
+          invented one appears there too.
+        </p>
       )}
 
       {generation && !solver.running && (
