@@ -11,7 +11,7 @@ import { violation, type Violation } from '../violations';
 import type { Plot } from '../plot/types';
 import type { Program, RoomSpec } from '../program/types';
 import type { Metrics, PlanModel, PlanRoom } from './types';
-import { placeFurniture, resolveSwingConflicts, swingObstructions } from './furniture';
+import { checkFurnishability } from './furnish';
 import { placeOpenings } from './openings';
 import { validatePlan } from './validate';
 import { extractWalls, wallLength } from './walls';
@@ -101,23 +101,10 @@ export function postProcess(input: PostProcessInput): PlanModel {
   const openings = placeOpenings(planRooms, walls, program, plot);
   violations.push(...openings.violations);
 
-  // --- furniture (design_rules_v4 §14) + Do07 door-hand resolution:
-  // place → mirror doors whose swing sweeps furniture → re-place once with
-  // doors frozen (the placed set only shrinks conflicts, never loops) →
-  // report residual overlaps as info ---
+  // --- furnishability (design_rules_v4 §14): warn when the standard
+  // furniture set cannot stand in a room clear of door swings ---
   const specById = new Map<string, RoomSpec>(program.rooms.map((s) => [s.id, s]));
-  const firstPass = placeFurniture(planRooms, walls, openings.doors, openings.windows, specById);
-  const swingFix = resolveSwingConflicts(openings.doors, walls, firstPass.items);
-  const doors = swingFix.doors;
-  const furniture = swingFix.changed
-    ? placeFurniture(planRooms, walls, doors, openings.windows, specById)
-    : firstPass;
-  violations.push(...furniture.violations);
-  const nameOfRoom = (roomId: string): string => {
-    const room = planRooms.find((r) => r.id === roomId);
-    return (room && specById.get(room.specId)?.name) || roomId;
-  };
-  violations.push(...swingObstructions(doors, walls, furniture.items, nameOfRoom));
+  violations.push(...checkFurnishability(planRooms, walls, openings.doors, specById));
 
   // --- net areas: gross − Σ (wall length × thickness/2) per flanking room ---
   const insetByRoom = new Map<string, number>();
@@ -158,9 +145,8 @@ export function postProcess(input: PostProcessInput): PlanModel {
     footprint,
     rooms: planRooms,
     walls,
-    doors,
+    doors: openings.doors,
     windows: openings.windows,
-    furniture: furniture.items,
     violations,
     metrics,
   };

@@ -3,7 +3,7 @@
 // vectorization — one renderer, zero drift between screen and exports.
 // World is Y-up; rendering negates y.
 
-import type { FurnitureItem, PlanModel, RoomSpec, RoomType, Vec, Wall } from '../../engine';
+import type { PlanModel, RoomSpec, RoomType, Vec, Wall } from '../../engine';
 import { lerp, ringBbox } from '../../engine';
 import { formatArea } from '../../lib/format';
 import type { UnitSystem } from '../../state/store';
@@ -24,8 +24,6 @@ export interface PlanRenderOptions {
   specs: Map<string, RoomSpec>;
   unitSystem: UnitSystem;
   showLabels?: boolean;
-  /** Auto-placed furniture glyphs (default on; thumbnails pass false). */
-  showFurniture?: boolean;
   /** Room ids (plan-room ids) with error-severity violations → red hatch. */
   errorRoomIds?: Set<string>;
 }
@@ -163,13 +161,6 @@ export function planToSvgInner(plan: PlanModel, opts: PlanRenderOptions): string
     );
   }
 
-  // furniture glyphs (design_rules_v4 §14; built-ins hatched per F05)
-  if (opts.showFurniture !== false && plan.furniture) {
-    for (const f of plan.furniture) {
-      parts.push(furnitureGlyph(f, thin));
-    }
-  }
-
   // labels
   if (opts.showLabels !== false) {
     const fontSize = Math.max(220, scaleRef / 34);
@@ -191,81 +182,7 @@ export function planToSvgInner(plan: PlanModel, opts: PlanRenderOptions): string
   return parts.join('\n');
 }
 
-const HATCH_DEF = `<defs><pattern id="errhatch" width="400" height="400" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="400" stroke="#d23b3b" stroke-width="60" opacity="0.25"/></pattern><pattern id="storhatch" width="220" height="220" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="220" stroke="#9aa2ae" stroke-width="34" opacity="0.5"/></pattern></defs>`;
-
-/** One furniture piece as SVG markup (world Y-up → screen negates y). */
-function furnitureGlyph(f: FurnitureItem, thin: number): string {
-  const stroke = `stroke="#6b7280" stroke-width="${thin}"`;
-  const rect = (x: number, y: number, w: number, h: number, extra = 'fill="none"'): string =>
-    `<rect x="${x}" y="${-(y + h)}" width="${w}" height="${h}" ${extra} ${stroke}/>`;
-  const outline = rect(f.x, f.y, f.w, f.h);
-  const cx = f.x + f.w / 2;
-  const cy = f.y + f.h / 2;
-  switch (f.kind) {
-    case 'bed-double':
-    case 'bed-single': {
-      // pillows at the headboard = the wall side = opposite the facing
-      const double = f.kind === 'bed-double';
-      const pillows: string[] = [];
-      const pw = double ? (Math.min(f.w, f.h) - 240) / 2 : Math.min(f.w, f.h) - 160;
-      const along = f.facing === 'N' || f.facing === 'S' ? f.w : f.h;
-      const count = double ? 2 : 1;
-      for (let i = 0; i < count; i++) {
-        const offset = count === 1 ? (along - pw) / 2 : 80 + i * (pw + 80);
-        if (f.facing === 'N') pillows.push(rect(f.x + offset, f.y + 60, pw, 350));
-        else if (f.facing === 'S') pillows.push(rect(f.x + offset, f.y + f.h - 410, pw, 350));
-        else if (f.facing === 'E') pillows.push(rect(f.x + 60, f.y + offset, 350, pw));
-        else pillows.push(rect(f.x + f.w - 410, f.y + offset, 350, pw));
-      }
-      return outline + pillows.join('');
-    }
-    case 'sofa': {
-      // back line along the wall side
-      const back =
-        f.facing === 'N'
-          ? `<line x1="${f.x}" y1="${-(f.y + 250)}" x2="${f.x + f.w}" y2="${-(f.y + 250)}" ${stroke}/>`
-          : f.facing === 'S'
-            ? `<line x1="${f.x}" y1="${-(f.y + f.h - 250)}" x2="${f.x + f.w}" y2="${-(f.y + f.h - 250)}" ${stroke}/>`
-            : f.facing === 'E'
-              ? `<line x1="${f.x + 250}" y1="${-f.y}" x2="${f.x + 250}" y2="${-(f.y + f.h)}" ${stroke}/>`
-              : `<line x1="${f.x + f.w - 250}" y1="${-f.y}" x2="${f.x + f.w - 250}" y2="${-(f.y + f.h)}" ${stroke}/>`;
-      return outline + back;
-    }
-    case 'wardrobe':
-    case 'shoe-cabinet':
-    case 'shelf':
-      // F05: built-in storage reads as a hatched rectangle against the wall
-      return rect(f.x, f.y, f.w, f.h, 'fill="url(#storhatch)"');
-    case 'bath':
-      return outline + rect(f.x + 90, f.y + 90, f.w - 180, f.h - 180, 'fill="none" rx="140"');
-    case 'basin':
-      return (
-        outline +
-        `<ellipse cx="${cx}" cy="${-cy}" rx="${f.w / 2 - 70}" ry="${f.h / 2 - 70}" fill="none" ${stroke}/>`
-      );
-    case 'toilet': {
-      // tank against the wall + bowl ellipse
-      const tank =
-        f.facing === 'N'
-          ? rect(f.x, f.y, f.w, 150)
-          : f.facing === 'S'
-            ? rect(f.x, f.y + f.h - 150, f.w, 150)
-            : f.facing === 'E'
-              ? rect(f.x, f.y, 150, f.h)
-              : rect(f.x + f.w - 150, f.y, 150, f.h);
-      return tank + `<ellipse cx="${cx}" cy="${-cy}" rx="${f.w / 2 - 40}" ry="${f.h / 2 - 40}" fill="none" ${stroke}/>`;
-    }
-    case 'washer':
-    case 'appliance':
-      return (
-        outline +
-        `<circle cx="${cx}" cy="${-cy}" r="${Math.min(f.w, f.h) / 2 - 90}" fill="none" ${stroke}/>`
-      );
-    default:
-      // bedside, coffee-table, dining-table, desk, worktop
-      return outline;
-  }
-}
+const HATCH_DEF = `<defs><pattern id="errhatch" width="400" height="400" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="400" stroke="#d23b3b" stroke-width="60" opacity="0.25"/></pattern></defs>`;
 
 /** Standalone SVG document — exports and thumbnails. */
 export function planToSvgDocument(plan: PlanModel, opts: PlanRenderOptions): string {

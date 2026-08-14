@@ -53,39 +53,6 @@ export interface Door extends Opening {
 
 export type Window = Opening;
 
-/** Placeable furniture/fixture kinds (design_rules_v4 §14, W04/W05/W07). */
-export type FurnitureKind =
-  | 'bed-double'
-  | 'bed-single'
-  | 'bedside'
-  | 'wardrobe'
-  | 'desk'
-  | 'sofa'
-  | 'coffee-table'
-  | 'dining-table'
-  | 'worktop'
-  | 'appliance'
-  | 'bath'
-  | 'basin'
-  | 'toilet'
-  | 'washer'
-  | 'shoe-cabinet'
-  | 'shelf';
-
-export interface FurnitureItem {
-  /** Deterministic per-room id: `${roomId}-f0`, `-f1`, … */
-  id: string;
-  roomId: string;
-  kind: FurnitureKind;
-  /** Axis-aligned rect in world mm. */
-  x: Mm;
-  y: Mm;
-  w: Mm;
-  h: Mm;
-  /** Direction from the host wall into the room — orients the glyph. */
-  facing: 'N' | 'E' | 'S' | 'W';
-}
-
 export interface Metrics {
   grossFloorArea: Mm2;
   netRoomArea: Mm2;
@@ -112,8 +79,6 @@ export interface PlanModel {
   walls: Wall[];
   doors: Door[];
   windows: Window[];
-  /** Auto-placed furniture (absent in saves that predate the feature). */
-  furniture?: FurnitureItem[];
   violations: Violation[];
   metrics: Metrics;
 }

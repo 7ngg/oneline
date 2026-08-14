@@ -62,18 +62,9 @@ function distance(a: Fingerprint, b: Fingerprint): number {
   return 0.5 * jaccard + 0.5 * displacement;
 }
 
-/**
- * Pick up to k candidates, best first, each above the distance floor from all
- * picked. `scoreOf` overrides the ranking (e.g. furnishability-adjusted)
- * without touching the candidates' displayed scores.
- */
-export function selectDiverse(
-  pool: Candidate[],
-  rooms: RoomSpec[],
-  k: number,
-  scoreOf: (c: Candidate) => number = (c) => c.terms.total,
-): Candidate[] {
-  const sorted = [...pool].sort((a, b) => scoreOf(b) - scoreOf(a));
+/** Pick up to k candidates, best first, each above the distance floor from all picked. */
+export function selectDiverse(pool: Candidate[], rooms: RoomSpec[], k: number): Candidate[] {
+  const sorted = [...pool].sort((a, b) => b.terms.total - a.terms.total);
   const picked: Candidate[] = [];
   const prints: Fingerprint[] = [];
   for (const candidate of sorted) {

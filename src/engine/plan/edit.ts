@@ -9,7 +9,6 @@ import { onSegment, type Vec } from '../geometry/vec';
 import { mm, type Mm } from '../units';
 import type { Plot } from '../plot/types';
 import type { Program, RoomSpec } from '../program/types';
-import { placeFurniture, swingObstructions } from './furniture';
 import { postProcess } from './postprocess';
 import type { Door, PlanModel } from './types';
 import { validatePlan } from './validate';
@@ -169,21 +168,5 @@ function revalidated(plan: PlanModel, program: Program, _plot: Plot): PlanModel 
   const structural = plan.violations.filter(
     (v) => v.code === 'SLIVER_ROOM' || v.code === 'ENTRANCE_MOVED' || v.code === 'ROOM_NO_EXTERIOR_WALL',
   );
-  // Furniture follows the user's door edits — doors stay EXACTLY as edited
-  // (no Do07 auto-mirror here: it would undo the user's own slide/flip);
-  // residual swing overlaps are reported, not fixed.
-  const specById = new Map(program.rooms.map((s) => [s.id, s]));
-  const furniture = placeFurniture(plan.rooms, plan.walls, plan.doors, plan.windows, specById);
-  const nameOfRoom = (roomId: string): string => {
-    const room = plan.rooms.find((r) => r.id === roomId);
-    return (room && specById.get(room.specId)?.name) || roomId;
-  };
-  const next: PlanModel = { ...plan, furniture: furniture.items };
-  next.violations = [
-    ...structural,
-    ...furniture.violations,
-    ...swingObstructions(plan.doors, plan.walls, furniture.items, nameOfRoom),
-    ...validatePlan(next, program),
-  ];
-  return next;
+  return { ...plan, violations: [...structural, ...validatePlan(plan, program)] };
 }
