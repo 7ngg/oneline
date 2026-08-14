@@ -53,6 +53,7 @@ export { synthesizePlot } from './plot/synthesize';
 // plan
 export * from './plan/types';
 export { flipDoorSwing, moveWallClamped, slideOpening } from './plan/edit';
+export { placeFurniture } from './plan/furniture';
 
 // solver
 export { generate } from './solver/pipeline';

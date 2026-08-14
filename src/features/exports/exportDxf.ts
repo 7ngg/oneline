@@ -19,6 +19,7 @@ export function planToDxfString(plan: PlanModel, specs: Map<string, RoomSpec>): 
   dxf.addLayer('WALLS', 7, 'Continuous');
   dxf.addLayer('DOORS', 1, 'Continuous');
   dxf.addLayer('WINDOWS', 5, 'Continuous');
+  dxf.addLayer('FURNITURE', 3, 'Continuous');
   dxf.addLayer('TEXT', 7, 'Continuous');
   dxf.addLayer('NOTES', 1, 'Continuous');
 
@@ -62,6 +63,18 @@ export function planToDxfString(plan: PlanModel, specs: Map<string, RoomSpec>): 
   };
   for (const door of plan.doors) openingLine(door, 'DOORS');
   for (const win of plan.windows) openingLine(win, 'WINDOWS');
+
+  for (const f of plan.furniture ?? []) {
+    dxf.addLWPolyline(
+      [
+        { point: point2d(f.x, f.y) },
+        { point: point2d(f.x + f.w, f.y) },
+        { point: point2d(f.x + f.w, f.y + f.h) },
+        { point: point2d(f.x, f.y + f.h) },
+      ],
+      { layerName: 'FURNITURE', flags: LWPolylineFlags.Closed },
+    );
+  }
 
   const bb = ringBbox(plan.footprint.outer);
   dxf.addText(point3d(bb.minX, bb.minY - 1200, 0), 350, DISCLAIMER, { layerName: 'NOTES' });

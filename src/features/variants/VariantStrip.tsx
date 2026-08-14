@@ -21,7 +21,7 @@ export function VariantStrip() {
     <div className="variant-strip" role="listbox" aria-label="Layout variants">
       {variants.map((variant, i) => {
         const errors = variant.violations.filter((v) => v.severity === 'error').length;
-        const svg = planToSvgDocument(variant, { specs, unitSystem, showLabels: false });
+        const svg = planToSvgDocument(variant, { specs, unitSystem, showLabels: false, showFurniture: false });
         return (
           <button
             key={variant.id}

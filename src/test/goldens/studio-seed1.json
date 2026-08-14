@@ -304,6 +304,78 @@
           "width": 3600
         }
       ],
+      "furniture": [
+        {
+          "id": "v1x0-r0-f0",
+          "roomId": "v1x0-r0",
+          "kind": "sofa",
+          "x": 3860,
+          "y": 0,
+          "w": 2200,
+          "h": 900,
+          "facing": "N"
+        },
+        {
+          "id": "v1x0-r0-f1",
+          "roomId": "v1x0-r0",
+          "kind": "coffee-table",
+          "x": 4410,
+          "y": 1300,
+          "w": 1100,
+          "h": 600,
+          "facing": "N"
+        },
+        {
+          "id": "v1x0-r0-f2",
+          "roomId": "v1x0-r0",
+          "kind": "dining-table",
+          "x": 5800,
+          "y": 5100,
+          "w": 1600,
+          "h": 900,
+          "facing": "S"
+        },
+        {
+          "id": "v1x0-r1-f0",
+          "roomId": "v1x0-r1",
+          "kind": "bath",
+          "x": 1210,
+          "y": 3240,
+          "w": 700,
+          "h": 1500,
+          "facing": "W"
+        },
+        {
+          "id": "v1x0-r1-f1",
+          "roomId": "v1x0-r1",
+          "kind": "basin",
+          "x": 1490,
+          "y": 4740,
+          "w": 420,
+          "h": 550,
+          "facing": "W"
+        },
+        {
+          "id": "v1x0-r1-f2",
+          "roomId": "v1x0-r1",
+          "kind": "toilet",
+          "x": 0,
+          "y": 4290,
+          "w": 400,
+          "h": 670,
+          "facing": "E"
+        },
+        {
+          "id": "v1x0-r2-f0",
+          "roomId": "v1x0-r2",
+          "kind": "shoe-cabinet",
+          "x": 1460,
+          "y": 1100,
+          "w": 450,
+          "h": 1800,
+          "facing": "W"
+        }
+      ],
       "violations": [],
       "metrics": {
         "grossFloorArea": 48000000,
@@ -623,6 +695,68 @@
           "width": 3600
         }
       ],
+      "furniture": [
+        {
+          "id": "v1x1-r0-f0",
+          "roomId": "v1x1-r0",
+          "kind": "sofa",
+          "x": 7100,
+          "y": 1900,
+          "w": 900,
+          "h": 2200,
+          "facing": "W"
+        },
+        {
+          "id": "v1x1-r0-f1",
+          "roomId": "v1x1-r0",
+          "kind": "coffee-table",
+          "x": 6100,
+          "y": 2450,
+          "w": 600,
+          "h": 1100,
+          "facing": "W"
+        },
+        {
+          "id": "v1x1-r0-f2",
+          "roomId": "v1x1-r0",
+          "kind": "dining-table",
+          "x": 5800,
+          "y": 0,
+          "w": 1600,
+          "h": 900,
+          "facing": "N"
+        },
+        {
+          "id": "v1x1-r1-f0",
+          "roomId": "v1x1-r1",
+          "kind": "bath",
+          "x": 1380,
+          "y": 2910,
+          "w": 700,
+          "h": 1500,
+          "facing": "W"
+        },
+        {
+          "id": "v1x1-r1-f1",
+          "roomId": "v1x1-r1",
+          "kind": "basin",
+          "x": 1660,
+          "y": 4410,
+          "w": 420,
+          "h": 550,
+          "facing": "W"
+        },
+        {
+          "id": "v1x1-r1-f2",
+          "roomId": "v1x1-r1",
+          "kind": "toilet",
+          "x": 1680,
+          "y": 5010,
+          "w": 400,
+          "h": 670,
+          "facing": "W"
+        }
+      ],
       "violations": [],
       "metrics": {
         "grossFloorArea": 48000000,
@@ -939,6 +1073,78 @@
           "wallId": "w6",
           "t0": 0.20826580226904376,
           "width": 3600
+        }
+      ],
+      "furniture": [
+        {
+          "id": "v1x2-r0-f0",
+          "roomId": "v1x2-r0",
+          "kind": "sofa",
+          "x": 3830,
+          "y": 0,
+          "w": 2200,
+          "h": 900,
+          "facing": "N"
+        },
+        {
+          "id": "v1x2-r0-f1",
+          "roomId": "v1x2-r0",
+          "kind": "coffee-table",
+          "x": 4380,
+          "y": 1300,
+          "w": 1100,
+          "h": 600,
+          "facing": "N"
+        },
+        {
+          "id": "v1x2-r0-f2",
+          "roomId": "v1x2-r0",
+          "kind": "dining-table",
+          "x": 5800,
+          "y": 5100,
+          "w": 1600,
+          "h": 900,
+          "facing": "S"
+        },
+        {
+          "id": "v1x2-r1-f0",
+          "roomId": "v1x2-r1",
+          "kind": "bath",
+          "x": 1130,
+          "y": 0,
+          "w": 700,
+          "h": 1500,
+          "facing": "W"
+        },
+        {
+          "id": "v1x2-r1-f1",
+          "roomId": "v1x2-r1",
+          "kind": "basin",
+          "x": 1410,
+          "y": 1500,
+          "w": 420,
+          "h": 550,
+          "facing": "W"
+        },
+        {
+          "id": "v1x2-r1-f2",
+          "roomId": "v1x2-r1",
+          "kind": "toilet",
+          "x": 0,
+          "y": 1000,
+          "w": 400,
+          "h": 670,
+          "facing": "E"
+        },
+        {
+          "id": "v1x2-r2-f0",
+          "roomId": "v1x2-r2",
+          "kind": "shoe-cabinet",
+          "x": 1380,
+          "y": 3840,
+          "w": 450,
+          "h": 1800,
+          "facing": "W"
         }
       ],
       "violations": [

@@ -446,15 +446,139 @@
           "width": 1650
         }
       ],
-      "violations": [
+      "furniture": [
         {
-          "code": "FURNITURE_UNFIT",
-          "severity": "warning",
-          "message": "\"Bathroom\" cannot fit the bath + basin fixture run — needs 1.6 × 2.3 m clear of door swings.",
-          "subjects": [
-            "v2x0-r3"
-          ]
+          "id": "v2x0-r0-f0",
+          "roomId": "v2x0-r0",
+          "kind": "sofa",
+          "x": 1750,
+          "y": 0,
+          "w": 2200,
+          "h": 900,
+          "facing": "N"
         },
+        {
+          "id": "v2x0-r0-f1",
+          "roomId": "v2x0-r0",
+          "kind": "coffee-table",
+          "x": 2300,
+          "y": 1300,
+          "w": 1100,
+          "h": 600,
+          "facing": "N"
+        },
+        {
+          "id": "v2x0-r0-f2",
+          "roomId": "v2x0-r0",
+          "kind": "dining-table",
+          "x": 6890,
+          "y": 0,
+          "w": 1600,
+          "h": 900,
+          "facing": "N"
+        },
+        {
+          "id": "v2x0-r1-f0",
+          "roomId": "v2x0-r1",
+          "kind": "worktop",
+          "x": 1700,
+          "y": 9400,
+          "w": 3600,
+          "h": 600,
+          "facing": "S"
+        },
+        {
+          "id": "v2x0-r1-f1",
+          "roomId": "v2x0-r1",
+          "kind": "appliance",
+          "x": 6400,
+          "y": 9400,
+          "w": 600,
+          "h": 600,
+          "facing": "S"
+        },
+        {
+          "id": "v2x0-r2-f0",
+          "roomId": "v2x0-r2",
+          "kind": "bed-double",
+          "x": 9740,
+          "y": 0,
+          "w": 1600,
+          "h": 2000,
+          "facing": "N"
+        },
+        {
+          "id": "v2x0-r2-f1",
+          "roomId": "v2x0-r2",
+          "kind": "bedside",
+          "x": 9290,
+          "y": 0,
+          "w": 450,
+          "h": 450,
+          "facing": "N"
+        },
+        {
+          "id": "v2x0-r2-f2",
+          "roomId": "v2x0-r2",
+          "kind": "bedside",
+          "x": 11340,
+          "y": 0,
+          "w": 450,
+          "h": 450,
+          "facing": "N"
+        },
+        {
+          "id": "v2x0-r2-f3",
+          "roomId": "v2x0-r2",
+          "kind": "wardrobe",
+          "x": 9090,
+          "y": 950,
+          "w": 600,
+          "h": 2400,
+          "facing": "E"
+        },
+        {
+          "id": "v2x0-r2-f4",
+          "roomId": "v2x0-r2",
+          "kind": "desk",
+          "x": 11400,
+          "y": 500,
+          "w": 600,
+          "h": 1200,
+          "facing": "W"
+        },
+        {
+          "id": "v2x0-r3-f0",
+          "roomId": "v2x0-r3",
+          "kind": "bath",
+          "x": 9990,
+          "y": 4470,
+          "w": 1500,
+          "h": 700,
+          "facing": "N"
+        },
+        {
+          "id": "v2x0-r3-f1",
+          "roomId": "v2x0-r3",
+          "kind": "basin",
+          "x": 9090,
+          "y": 5580,
+          "w": 550,
+          "h": 420,
+          "facing": "S"
+        },
+        {
+          "id": "v2x0-r3-f2",
+          "roomId": "v2x0-r3",
+          "kind": "toilet",
+          "x": 10190,
+          "y": 5600,
+          "w": 670,
+          "h": 400,
+          "facing": "S"
+        }
+      ],
+      "violations": [
         {
           "code": "ROOM_BELOW_MIN_AREA",
           "severity": "error",
@@ -517,7 +641,7 @@
           "poly": {
             "outer": [
               {
-                "x": 9100,
+                "x": 12000,
                 "y": 6000
               },
               {
@@ -526,25 +650,25 @@
               },
               {
                 "x": 7000,
-                "y": 10000
+                "y": 7150
               },
               {
                 "x": 0,
-                "y": 10000
+                "y": 7150
               },
               {
                 "x": 0,
-                "y": 1730
+                "y": 0
               },
               {
-                "x": 9100,
-                "y": 1730
+                "x": 12000,
+                "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 66857000,
-          "netArea": 62983000
+          "grossArea": 80050000,
+          "netArea": 75005000
         },
         {
           "id": "v2x1-r1",
@@ -552,26 +676,26 @@
           "poly": {
             "outer": [
               {
-                "x": 12000,
-                "y": 6000
+                "x": 7000,
+                "y": 10000
               },
               {
-                "x": 9100,
-                "y": 6000
+                "x": 5220,
+                "y": 10000
               },
               {
-                "x": 9100,
-                "y": 1730
+                "x": 5220,
+                "y": 7150
               },
               {
-                "x": 12000,
-                "y": 1730
+                "x": 7000,
+                "y": 7150
               }
             ],
             "holes": []
           },
-          "grossArea": 12383000,
-          "netArea": 10949000
+          "grossArea": 5073000,
+          "netArea": 4147000
         },
         {
           "id": "v2x1-r2",
@@ -579,26 +703,26 @@
           "poly": {
             "outer": [
               {
-                "x": 12000,
-                "y": 1730
+                "x": 3500,
+                "y": 10000
               },
               {
-                "x": 2600,
-                "y": 1730
+                "x": 0,
+                "y": 10000
               },
               {
-                "x": 2600,
-                "y": 0
+                "x": 0,
+                "y": 7150
               },
               {
-                "x": 12000,
-                "y": 0
+                "x": 3500,
+                "y": 7150
               }
             ],
             "holes": []
           },
-          "grossArea": 16262000,
-          "netArea": 14036000
+          "grossArea": 9975000,
+          "netArea": 8705000
         },
         {
           "id": "v2x1-r3",
@@ -606,26 +730,26 @@
           "poly": {
             "outer": [
               {
-                "x": 2600,
-                "y": 1730
+                "x": 5220,
+                "y": 10000
               },
               {
-                "x": 0,
-                "y": 1730
+                "x": 3500,
+                "y": 10000
               },
               {
-                "x": 0,
-                "y": 0
+                "x": 3500,
+                "y": 7150
               },
               {
-                "x": 2600,
-                "y": 0
+                "x": 5220,
+                "y": 7150
               }
             ],
             "holes": []
           },
-          "grossArea": 4498000,
-          "netArea": 3632000
+          "grossArea": 4902000,
+          "netArea": 4273000
         }
       ],
       "walls": [
@@ -637,42 +761,42 @@
           },
           "b": {
             "x": 12000,
-            "y": 1730
+            "y": 6000
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v2x1-r2",
+          "leftRoomId": "v2x1-r0",
           "rightRoomId": null
         },
         {
           "id": "w1",
           "a": {
-            "x": 12000,
-            "y": 1730
+            "x": 3500,
+            "y": 7150
           },
           "b": {
-            "x": 12000,
-            "y": 6000
+            "x": 3500,
+            "y": 10000
           },
-          "thickness": 300,
-          "kind": "exterior",
-          "leftRoomId": "v2x1-r1",
-          "rightRoomId": null
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x1-r2",
+          "rightRoomId": "v2x1-r3"
         },
         {
           "id": "w2",
           "a": {
-            "x": 2600,
-            "y": 0
+            "x": 5220,
+            "y": 7150
           },
           "b": {
-            "x": 2600,
-            "y": 1730
+            "x": 5220,
+            "y": 10000
           },
           "thickness": 100,
           "kind": "interior",
           "leftRoomId": "v2x1-r3",
-          "rightRoomId": "v2x1-r2"
+          "rightRoomId": "v2x1-r1"
         },
         {
           "id": "w3",
@@ -682,7 +806,7 @@
           },
           "b": {
             "x": 7000,
-            "y": 10000
+            "y": 7150
           },
           "thickness": 300,
           "kind": "exterior",
@@ -692,17 +816,17 @@
         {
           "id": "w4",
           "a": {
-            "x": 9100,
-            "y": 1730
+            "x": 7000,
+            "y": 7150
           },
           "b": {
-            "x": 9100,
-            "y": 6000
+            "x": 7000,
+            "y": 10000
           },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x1-r0",
-          "rightRoomId": "v2x1-r1"
+          "thickness": 300,
+          "kind": "exterior",
+          "leftRoomId": "v2x1-r1",
+          "rightRoomId": null
         },
         {
           "id": "w5",
@@ -712,18 +836,18 @@
           },
           "b": {
             "x": 0,
-            "y": 1730
+            "y": 7150
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v2x1-r3"
+          "rightRoomId": "v2x1-r0"
         },
         {
           "id": "w6",
           "a": {
             "x": 0,
-            "y": 1730
+            "y": 7150
           },
           "b": {
             "x": 0,
@@ -732,7 +856,7 @@
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v2x1-r0"
+          "rightRoomId": "v2x1-r2"
         },
         {
           "id": "w7",
@@ -741,127 +865,127 @@
             "y": 0
           },
           "b": {
-            "x": 2600,
+            "x": 12000,
             "y": 0
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v2x1-r3",
+          "leftRoomId": "v2x1-r0",
           "rightRoomId": null
         },
         {
           "id": "w8",
           "a": {
-            "x": 2600,
-            "y": 0
+            "x": 0,
+            "y": 10000
           },
           "b": {
-            "x": 12000,
-            "y": 0
+            "x": 3500,
+            "y": 10000
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v2x1-r2",
-          "rightRoomId": null
+          "leftRoomId": null,
+          "rightRoomId": "v2x1-r2"
         },
         {
           "id": "w9",
           "a": {
-            "x": 0,
+            "x": 3500,
             "y": 10000
           },
           "b": {
-            "x": 7000,
+            "x": 5220,
             "y": 10000
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v2x1-r0"
+          "rightRoomId": "v2x1-r3"
         },
         {
           "id": "w10",
           "a": {
-            "x": 0,
-            "y": 1730
+            "x": 5220,
+            "y": 10000
           },
           "b": {
-            "x": 2600,
-            "y": 1730
-          },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x1-r0",
-          "rightRoomId": "v2x1-r3"
-        },
-        {
-          "id": "w11",
-          "a": {
-            "x": 2600,
-            "y": 1730
-          },
-          "b": {
-            "x": 9100,
-            "y": 1730
-          },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x1-r0",
-          "rightRoomId": "v2x1-r2"
-        },
-        {
-          "id": "w12",
-          "a": {
-            "x": 9100,
-            "y": 1730
-          },
-          "b": {
-            "x": 12000,
-            "y": 1730
-          },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x1-r1",
-          "rightRoomId": "v2x1-r2"
-        },
-        {
-          "id": "w13",
-          "a": {
             "x": 7000,
-            "y": 6000
-          },
-          "b": {
-            "x": 9100,
-            "y": 6000
-          },
-          "thickness": 300,
-          "kind": "exterior",
-          "leftRoomId": null,
-          "rightRoomId": "v2x1-r0"
-        },
-        {
-          "id": "w14",
-          "a": {
-            "x": 9100,
-            "y": 6000
-          },
-          "b": {
-            "x": 12000,
-            "y": 6000
+            "y": 10000
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
           "rightRoomId": "v2x1-r1"
+        },
+        {
+          "id": "w11",
+          "a": {
+            "x": 7000,
+            "y": 6000
+          },
+          "b": {
+            "x": 12000,
+            "y": 6000
+          },
+          "thickness": 300,
+          "kind": "exterior",
+          "leftRoomId": null,
+          "rightRoomId": "v2x1-r0"
+        },
+        {
+          "id": "w12",
+          "a": {
+            "x": 0,
+            "y": 7150
+          },
+          "b": {
+            "x": 3500,
+            "y": 7150
+          },
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x1-r2",
+          "rightRoomId": "v2x1-r0"
+        },
+        {
+          "id": "w13",
+          "a": {
+            "x": 3500,
+            "y": 7150
+          },
+          "b": {
+            "x": 5220,
+            "y": 7150
+          },
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x1-r3",
+          "rightRoomId": "v2x1-r0"
+        },
+        {
+          "id": "w14",
+          "a": {
+            "x": 5220,
+            "y": 7150
+          },
+          "b": {
+            "x": 7000,
+            "y": 7150
+          },
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x1-r1",
+          "rightRoomId": "v2x1-r0"
         }
       ],
       "doors": [
         {
           "id": "d0",
-          "wallId": "w6",
-          "t0": 0.4455864570737606,
+          "wallId": "w7",
+          "t0": 0.4625,
           "width": 900,
-          "swing": "right",
+          "swing": "left",
           "connects": [
             "v2x1-r0",
             "outside"
@@ -869,23 +993,22 @@
         },
         {
           "id": "d1",
-          "wallId": "w4",
-          "t0": 0.765807962529274,
+          "wallId": "w12",
+          "t0": 0.7142857142857143,
           "width": 900,
-          "swing": "right",
+          "swing": "left",
           "hinge": "b",
-          "kind": "sliding",
           "connects": [
-            "v2x1-r1",
+            "v2x1-r2",
             "v2x1-r0"
           ]
         },
         {
           "id": "d2",
-          "wallId": "w10",
-          "t0": 0.6153846153846154,
+          "wallId": "w13",
+          "t0": 0.4186046511627907,
           "width": 900,
-          "swing": "right",
+          "swing": "left",
           "hinge": "b",
           "connects": [
             "v2x1-r3",
@@ -894,12 +1017,13 @@
         },
         {
           "id": "d3",
-          "wallId": "w11",
-          "t0": 0.015384615384615385,
+          "wallId": "w14",
+          "t0": 0.056179775280898875,
           "width": 900,
-          "swing": "right",
+          "swing": "left",
+          "kind": "sliding",
           "connects": [
-            "v2x1-r2",
+            "v2x1-r1",
             "v2x1-r0"
           ]
         }
@@ -907,58 +1031,150 @@
       "windows": [
         {
           "id": "n0",
-          "wallId": "w9",
-          "t0": 0.24285714285714285,
+          "wallId": "w5",
+          "t0": 0.24825174825174826,
           "width": 3600
         },
         {
           "id": "n1",
-          "wallId": "w1",
-          "t0": 0.3185011709601874,
-          "width": 1550
+          "wallId": "w4",
+          "t0": 0.38596491228070173,
+          "width": 650
         },
         {
           "id": "n2",
           "wallId": "w8",
-          "t0": 0.39095744680851063,
-          "width": 2050
+          "t0": 0.32142857142857145,
+          "width": 1250
+        }
+      ],
+      "furniture": [
+        {
+          "id": "v2x1-r0-f0",
+          "roomId": "v2x1-r0",
+          "kind": "sofa",
+          "x": 3200,
+          "y": 0,
+          "w": 2200,
+          "h": 900,
+          "facing": "N"
+        },
+        {
+          "id": "v2x1-r0-f1",
+          "roomId": "v2x1-r0",
+          "kind": "coffee-table",
+          "x": 3750,
+          "y": 1300,
+          "w": 1100,
+          "h": 600,
+          "facing": "N"
+        },
+        {
+          "id": "v2x1-r0-f2",
+          "roomId": "v2x1-r0",
+          "kind": "dining-table",
+          "x": 9800,
+          "y": 0,
+          "w": 1600,
+          "h": 900,
+          "facing": "N"
+        },
+        {
+          "id": "v2x1-r1-f0",
+          "roomId": "v2x1-r1",
+          "kind": "worktop",
+          "x": 6400,
+          "y": 7250,
+          "w": 600,
+          "h": 2650,
+          "facing": "W"
+        },
+        {
+          "id": "v2x1-r1-f1",
+          "roomId": "v2x1-r1",
+          "kind": "appliance",
+          "x": 5220,
+          "y": 9400,
+          "w": 600,
+          "h": 600,
+          "facing": "E"
+        },
+        {
+          "id": "v2x1-r2-f0",
+          "roomId": "v2x1-r2",
+          "kind": "bed-single",
+          "x": 0,
+          "y": 8150,
+          "w": 2000,
+          "h": 900,
+          "facing": "E"
+        },
+        {
+          "id": "v2x1-r3-f0",
+          "roomId": "v2x1-r3",
+          "kind": "bath",
+          "x": 3500,
+          "y": 7150,
+          "w": 700,
+          "h": 1500,
+          "facing": "E"
+        },
+        {
+          "id": "v2x1-r3-f1",
+          "roomId": "v2x1-r3",
+          "kind": "basin",
+          "x": 3500,
+          "y": 8650,
+          "w": 420,
+          "h": 550,
+          "facing": "E"
+        },
+        {
+          "id": "v2x1-r3-f2",
+          "roomId": "v2x1-r3",
+          "kind": "toilet",
+          "x": 4820,
+          "y": 8250,
+          "w": 400,
+          "h": 670,
+          "facing": "W"
         }
       ],
       "violations": [
         {
-          "code": "FURNITURE_UNFIT",
-          "severity": "warning",
-          "message": "\"Bedroom\" cannot fit a double bed with side passages — needs 2.6 × 2.6 m clear of door swings.",
+          "code": "ROOM_BELOW_MIN_AREA",
+          "severity": "error",
+          "message": "\"Kitchen\" nets 4.1 m², below its 5.0 m² minimum.",
           "subjects": [
-            "v2x1-r2"
+            "v2x1-r1"
           ]
         },
         {
           "code": "ROOM_MIN_DIM_VIOLATED",
           "severity": "warning",
-          "message": "\"Bedroom\" is narrower than its 2.7 m minimum somewhere.",
+          "message": "\"Kitchen\" is narrower than its 1.8 m minimum somewhere.",
           "subjects": [
-            "v2x1-r2"
+            "v2x1-r1"
           ]
         },
         {
           "code": "ROOM_BELOW_MIN_AREA",
           "severity": "error",
-          "message": "\"Bathroom\" nets 3.6 m², below its 4.0 m² minimum.",
+          "message": "\"Bedroom\" nets 8.7 m², below its 9.0 m² minimum.",
           "subjects": [
-            "v2x1-r3"
+            "v2x1-r2"
           ]
         }
       ],
       "metrics": {
         "grossFloorArea": 100000000,
-        "netRoomArea": 91600000,
+        "netRoomArea": 92130000,
         "circulationArea": 0,
-        "efficiency": 0.916,
+        "efficiency": 0.9213,
         "adjacencyScore": 1,
-        "areaFitScore": 0.521635989010989,
+        "areaFitScore": 0.39601153846153847,
         "daylightScore": 1,
-        "totalScore": 0.8620317004696704,
+        "totalScore": 0.8583663134320586,
         "circulationScore": 1,
         "wetClusterScore": 1,
         "entranceScore": 1
@@ -1003,7 +1219,7 @@
           "poly": {
             "outer": [
               {
-                "x": 12000,
+                "x": 9100,
                 "y": 6000
               },
               {
@@ -1012,25 +1228,25 @@
               },
               {
                 "x": 7000,
-                "y": 7150
+                "y": 10000
               },
               {
                 "x": 0,
-                "y": 7150
+                "y": 10000
               },
               {
                 "x": 0,
-                "y": 0
+                "y": 1730
               },
               {
-                "x": 12000,
-                "y": 0
+                "x": 9100,
+                "y": 1730
               }
             ],
             "holes": []
           },
-          "grossArea": 80050000,
-          "netArea": 75005000
+          "grossArea": 66857000,
+          "netArea": 62983000
         },
         {
           "id": "v2x2-r1",
@@ -1038,26 +1254,26 @@
           "poly": {
             "outer": [
               {
-                "x": 7000,
-                "y": 10000
+                "x": 12000,
+                "y": 6000
               },
               {
-                "x": 5220,
-                "y": 10000
+                "x": 9100,
+                "y": 6000
               },
               {
-                "x": 5220,
-                "y": 7150
+                "x": 9100,
+                "y": 1730
               },
               {
-                "x": 7000,
-                "y": 7150
+                "x": 12000,
+                "y": 1730
               }
             ],
             "holes": []
           },
-          "grossArea": 5073000,
-          "netArea": 4147000
+          "grossArea": 12383000,
+          "netArea": 10949000
         },
         {
           "id": "v2x2-r2",
@@ -1065,26 +1281,26 @@
           "poly": {
             "outer": [
               {
-                "x": 3500,
-                "y": 10000
+                "x": 12000,
+                "y": 1730
               },
               {
-                "x": 0,
-                "y": 10000
+                "x": 2600,
+                "y": 1730
               },
               {
-                "x": 0,
-                "y": 7150
+                "x": 2600,
+                "y": 0
               },
               {
-                "x": 3500,
-                "y": 7150
+                "x": 12000,
+                "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 9975000,
-          "netArea": 8705000
+          "grossArea": 16262000,
+          "netArea": 14036000
         },
         {
           "id": "v2x2-r3",
@@ -1092,26 +1308,26 @@
           "poly": {
             "outer": [
               {
-                "x": 5220,
-                "y": 10000
+                "x": 2600,
+                "y": 1730
               },
               {
-                "x": 3500,
-                "y": 10000
+                "x": 0,
+                "y": 1730
               },
               {
-                "x": 3500,
-                "y": 7150
+                "x": 0,
+                "y": 0
               },
               {
-                "x": 5220,
-                "y": 7150
+                "x": 2600,
+                "y": 0
               }
             ],
             "holes": []
           },
-          "grossArea": 4902000,
-          "netArea": 4273000
+          "grossArea": 4498000,
+          "netArea": 3632000
         }
       ],
       "walls": [
@@ -1123,42 +1339,42 @@
           },
           "b": {
             "x": 12000,
-            "y": 6000
+            "y": 1730
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v2x2-r0",
+          "leftRoomId": "v2x2-r2",
           "rightRoomId": null
         },
         {
           "id": "w1",
           "a": {
-            "x": 3500,
-            "y": 7150
+            "x": 12000,
+            "y": 1730
           },
           "b": {
-            "x": 3500,
-            "y": 10000
+            "x": 12000,
+            "y": 6000
           },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x2-r2",
-          "rightRoomId": "v2x2-r3"
+          "thickness": 300,
+          "kind": "exterior",
+          "leftRoomId": "v2x2-r1",
+          "rightRoomId": null
         },
         {
           "id": "w2",
           "a": {
-            "x": 5220,
-            "y": 7150
+            "x": 2600,
+            "y": 0
           },
           "b": {
-            "x": 5220,
-            "y": 10000
+            "x": 2600,
+            "y": 1730
           },
           "thickness": 100,
           "kind": "interior",
           "leftRoomId": "v2x2-r3",
-          "rightRoomId": "v2x2-r1"
+          "rightRoomId": "v2x2-r2"
         },
         {
           "id": "w3",
@@ -1168,7 +1384,7 @@
           },
           "b": {
             "x": 7000,
-            "y": 7150
+            "y": 10000
           },
           "thickness": 300,
           "kind": "exterior",
@@ -1178,17 +1394,17 @@
         {
           "id": "w4",
           "a": {
-            "x": 7000,
-            "y": 7150
+            "x": 9100,
+            "y": 1730
           },
           "b": {
-            "x": 7000,
-            "y": 10000
+            "x": 9100,
+            "y": 6000
           },
-          "thickness": 300,
-          "kind": "exterior",
-          "leftRoomId": "v2x2-r1",
-          "rightRoomId": null
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x2-r0",
+          "rightRoomId": "v2x2-r1"
         },
         {
           "id": "w5",
@@ -1198,18 +1414,18 @@
           },
           "b": {
             "x": 0,
-            "y": 7150
+            "y": 1730
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v2x2-r0"
+          "rightRoomId": "v2x2-r3"
         },
         {
           "id": "w6",
           "a": {
             "x": 0,
-            "y": 7150
+            "y": 1730
           },
           "b": {
             "x": 0,
@@ -1218,7 +1434,7 @@
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v2x2-r2"
+          "rightRoomId": "v2x2-r0"
         },
         {
           "id": "w7",
@@ -1227,63 +1443,108 @@
             "y": 0
           },
           "b": {
-            "x": 12000,
+            "x": 2600,
             "y": 0
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": "v2x2-r0",
+          "leftRoomId": "v2x2-r3",
           "rightRoomId": null
         },
         {
           "id": "w8",
           "a": {
-            "x": 0,
-            "y": 10000
+            "x": 2600,
+            "y": 0
           },
           "b": {
-            "x": 3500,
-            "y": 10000
+            "x": 12000,
+            "y": 0
           },
           "thickness": 300,
           "kind": "exterior",
-          "leftRoomId": null,
-          "rightRoomId": "v2x2-r2"
+          "leftRoomId": "v2x2-r2",
+          "rightRoomId": null
         },
         {
           "id": "w9",
           "a": {
-            "x": 3500,
+            "x": 0,
             "y": 10000
           },
           "b": {
-            "x": 5220,
+            "x": 7000,
             "y": 10000
           },
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v2x2-r3"
+          "rightRoomId": "v2x2-r0"
         },
         {
           "id": "w10",
           "a": {
-            "x": 5220,
-            "y": 10000
+            "x": 0,
+            "y": 1730
           },
           "b": {
-            "x": 7000,
-            "y": 10000
+            "x": 2600,
+            "y": 1730
           },
-          "thickness": 300,
-          "kind": "exterior",
-          "leftRoomId": null,
-          "rightRoomId": "v2x2-r1"
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x2-r0",
+          "rightRoomId": "v2x2-r3"
         },
         {
           "id": "w11",
           "a": {
+            "x": 2600,
+            "y": 1730
+          },
+          "b": {
+            "x": 9100,
+            "y": 1730
+          },
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x2-r0",
+          "rightRoomId": "v2x2-r2"
+        },
+        {
+          "id": "w12",
+          "a": {
+            "x": 9100,
+            "y": 1730
+          },
+          "b": {
+            "x": 12000,
+            "y": 1730
+          },
+          "thickness": 100,
+          "kind": "interior",
+          "leftRoomId": "v2x2-r1",
+          "rightRoomId": "v2x2-r2"
+        },
+        {
+          "id": "w13",
+          "a": {
             "x": 7000,
+            "y": 6000
+          },
+          "b": {
+            "x": 9100,
+            "y": 6000
+          },
+          "thickness": 300,
+          "kind": "exterior",
+          "leftRoomId": null,
+          "rightRoomId": "v2x2-r0"
+        },
+        {
+          "id": "w14",
+          "a": {
+            "x": 9100,
             "y": 6000
           },
           "b": {
@@ -1293,61 +1554,16 @@
           "thickness": 300,
           "kind": "exterior",
           "leftRoomId": null,
-          "rightRoomId": "v2x2-r0"
-        },
-        {
-          "id": "w12",
-          "a": {
-            "x": 0,
-            "y": 7150
-          },
-          "b": {
-            "x": 3500,
-            "y": 7150
-          },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x2-r2",
-          "rightRoomId": "v2x2-r0"
-        },
-        {
-          "id": "w13",
-          "a": {
-            "x": 3500,
-            "y": 7150
-          },
-          "b": {
-            "x": 5220,
-            "y": 7150
-          },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x2-r3",
-          "rightRoomId": "v2x2-r0"
-        },
-        {
-          "id": "w14",
-          "a": {
-            "x": 5220,
-            "y": 7150
-          },
-          "b": {
-            "x": 7000,
-            "y": 7150
-          },
-          "thickness": 100,
-          "kind": "interior",
-          "leftRoomId": "v2x2-r1",
-          "rightRoomId": "v2x2-r0"
+          "rightRoomId": "v2x2-r1"
         }
       ],
       "doors": [
         {
           "id": "d0",
-          "wallId": "w7",
-          "t0": 0.4625,
+          "wallId": "w6",
+          "t0": 0.4455864570737606,
           "width": 900,
-          "swing": "left",
+          "swing": "right",
           "connects": [
             "v2x2-r0",
             "outside"
@@ -1355,22 +1571,23 @@
         },
         {
           "id": "d1",
-          "wallId": "w12",
-          "t0": 0.7142857142857143,
+          "wallId": "w4",
+          "t0": 0.765807962529274,
           "width": 900,
-          "swing": "left",
+          "swing": "right",
           "hinge": "b",
+          "kind": "sliding",
           "connects": [
-            "v2x2-r2",
+            "v2x2-r1",
             "v2x2-r0"
           ]
         },
         {
           "id": "d2",
-          "wallId": "w13",
-          "t0": 0.4186046511627907,
+          "wallId": "w10",
+          "t0": 0.6153846153846154,
           "width": 900,
-          "swing": "left",
+          "swing": "right",
           "hinge": "b",
           "connects": [
             "v2x2-r3",
@@ -1379,13 +1596,12 @@
         },
         {
           "id": "d3",
-          "wallId": "w14",
-          "t0": 0.056179775280898875,
+          "wallId": "w11",
+          "t0": 0.015384615384615385,
           "width": 900,
-          "swing": "left",
-          "kind": "sliding",
+          "swing": "right",
           "connects": [
-            "v2x2-r1",
+            "v2x2-r2",
             "v2x2-r0"
           ]
         }
@@ -1393,66 +1609,140 @@
       "windows": [
         {
           "id": "n0",
-          "wallId": "w5",
-          "t0": 0.24825174825174826,
+          "wallId": "w9",
+          "t0": 0.24285714285714285,
           "width": 3600
         },
         {
           "id": "n1",
-          "wallId": "w4",
-          "t0": 0.38596491228070173,
-          "width": 650
+          "wallId": "w1",
+          "t0": 0.3185011709601874,
+          "width": 1550
         },
         {
           "id": "n2",
           "wallId": "w8",
-          "t0": 0.32142857142857145,
-          "width": 1250
+          "t0": 0.39095744680851063,
+          "width": 2050
+        }
+      ],
+      "furniture": [
+        {
+          "id": "v2x2-r0-f0",
+          "roomId": "v2x2-r0",
+          "kind": "sofa",
+          "x": 0,
+          "y": 3080,
+          "w": 900,
+          "h": 2200,
+          "facing": "E"
+        },
+        {
+          "id": "v2x2-r0-f1",
+          "roomId": "v2x2-r0",
+          "kind": "coffee-table",
+          "x": 1300,
+          "y": 3630,
+          "w": 600,
+          "h": 1100,
+          "facing": "E"
+        },
+        {
+          "id": "v2x2-r0-f2",
+          "roomId": "v2x2-r0",
+          "kind": "dining-table",
+          "x": 0,
+          "y": 7800,
+          "w": 900,
+          "h": 1600,
+          "facing": "E"
+        },
+        {
+          "id": "v2x2-r1-f0",
+          "roomId": "v2x2-r1",
+          "kind": "worktop",
+          "x": 11400,
+          "y": 2080,
+          "w": 600,
+          "h": 3600,
+          "facing": "W"
+        },
+        {
+          "id": "v2x2-r1-f1",
+          "roomId": "v2x2-r1",
+          "kind": "appliance",
+          "x": 9100,
+          "y": 4300,
+          "w": 600,
+          "h": 600,
+          "facing": "E"
+        },
+        {
+          "id": "v2x2-r3-f0",
+          "roomId": "v2x2-r3",
+          "kind": "bath",
+          "x": 0,
+          "y": 1030,
+          "w": 1500,
+          "h": 700,
+          "facing": "S"
+        },
+        {
+          "id": "v2x2-r3-f1",
+          "roomId": "v2x2-r3",
+          "kind": "basin",
+          "x": 0,
+          "y": 0,
+          "w": 550,
+          "h": 420,
+          "facing": "N"
+        },
+        {
+          "id": "v2x2-r3-f2",
+          "roomId": "v2x2-r3",
+          "kind": "toilet",
+          "x": 950,
+          "y": 0,
+          "w": 670,
+          "h": 400,
+          "facing": "N"
         }
       ],
       "violations": [
         {
           "code": "FURNITURE_UNFIT",
           "severity": "warning",
-          "message": "\"Kitchen\" cannot fit a worktop run with clearance — needs 2.4 × 1.8 m clear of door swings.",
+          "message": "\"Bedroom\" cannot fit a double bed with side passages — needs 2.6 × 2.6 m clear of door swings.",
           "subjects": [
-            "v2x2-r1"
-          ]
-        },
-        {
-          "code": "ROOM_BELOW_MIN_AREA",
-          "severity": "error",
-          "message": "\"Kitchen\" nets 4.1 m², below its 5.0 m² minimum.",
-          "subjects": [
-            "v2x2-r1"
+            "v2x2-r2"
           ]
         },
         {
           "code": "ROOM_MIN_DIM_VIOLATED",
           "severity": "warning",
-          "message": "\"Kitchen\" is narrower than its 1.8 m minimum somewhere.",
+          "message": "\"Bedroom\" is narrower than its 2.7 m minimum somewhere.",
           "subjects": [
-            "v2x2-r1"
+            "v2x2-r2"
           ]
         },
         {
           "code": "ROOM_BELOW_MIN_AREA",
           "severity": "error",
-          "message": "\"Bedroom\" nets 8.7 m², below its 9.0 m² minimum.",
+          "message": "\"Bathroom\" nets 3.6 m², below its 4.0 m² minimum.",
           "subjects": [
-            "v2x2-r2"
+            "v2x2-r3"
           ]
         }
       ],
       "metrics": {
         "grossFloorArea": 100000000,
-        "netRoomArea": 92130000,
+        "netRoomArea": 91600000,
         "circulationArea": 0,
-        "efficiency": 0.9213,
+        "efficiency": 0.916,
         "adjacencyScore": 1,
-        "areaFitScore": 0.39601153846153847,
+        "areaFitScore": 0.521635989010989,
         "daylightScore": 1,
-        "totalScore": 0.8583663134320586,
+        "totalScore": 0.8620317004696704,
         "circulationScore": 1,
         "wetClusterScore": 1,
         "entranceScore": 1

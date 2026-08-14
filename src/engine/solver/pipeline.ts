@@ -9,9 +9,13 @@ import { polyBoundaryLength, ringBbox, type Poly } from '../geometry/polygon';
 import { rectFromBbox } from '../geometry/rect';
 import { lerp, type Vec } from '../geometry/vec';
 import { Rng } from '../rng';
+import { mm2 } from '../units';
 import { hasErrors, violation, type Violation } from '../violations';
-import type { PlanModel } from '../plan/types';
+import type { PlanModel, PlanRoom } from '../plan/types';
+import { placeFurniture } from '../plan/furniture';
+import { placeOpenings } from '../plan/openings';
 import { postProcess } from '../plan/postprocess';
+import { extractWalls } from '../plan/walls';
 import { aspectCapFor } from '../priors/priors';
 import { computeFootprint } from '../plot/footprint';
 import { validatePlot } from '../plot/validate';
@@ -478,9 +482,39 @@ export function generate(req: GenerateRequest, hooks: PipelineHooks = {}): Gener
     );
   }
 
-  // 7. diverse selection
+  // 7. diverse selection, furnishability-aware: a quick primary-furniture
+  // placement over each finalist (walls + doors derived on the fly) ranks
+  // layouts where the bed/worktop/bath actually stand above ones where they
+  // don't. Advisory only — postProcess re-places on the final geometry.
+  const specById = new Map<string, RoomSpec>(program.rooms.map((s) => [s.id, s]));
+  const furnishRatio = new Map<Candidate, number>();
+  for (const candidate of selectable) {
+    const liteRooms: PlanRoom[] = [];
+    candidate.cells.forEach((cell, i) => {
+      if (!cell) return;
+      const gross = mm2(area2OfPoly(cell) / 2);
+      liteRooms.push({
+        id: `q${i}`,
+        specId: (rooms[i] as RoomSpec).id,
+        poly: cell,
+        grossArea: gross,
+        netArea: gross,
+      });
+    });
+    const liteWalls = extractWalls(liteRooms, footprint, program.defaults);
+    const liteOpenings = placeOpenings(liteRooms, liteWalls, program, req.plot);
+    const placed = placeFurniture(liteRooms, liteWalls, liteOpenings.doors, liteOpenings.windows, specById, {
+      primariesOnly: true,
+    });
+    furnishRatio.set(candidate, placed.primaryCount > 0 ? placed.primaryPlaced / placed.primaryCount : 1);
+  }
   onProgress({ stage: 'finalize', done: 0, total: 1, bestScore: selectable[0]?.terms.total ?? null });
-  const selected = selectDiverse(selectable, rooms, req.k);
+  const selected = selectDiverse(
+    selectable,
+    rooms,
+    req.k,
+    (c) => c.terms.total - 0.08 * (1 - (furnishRatio.get(c) ?? 1)),
+  );
   if (selected.length < req.k) {
     violations.push(
       violation(

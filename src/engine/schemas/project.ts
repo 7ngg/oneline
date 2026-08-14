@@ -169,6 +169,41 @@ export const planModelSchema = z
       )
       .max(256),
     windows: z.array(z.object(openingBase).strict()).max(256),
+    // added after first release — optional so older saves keep parsing
+    furniture: z
+      .array(
+        z
+          .object({
+            id: z.string(),
+            roomId: z.string(),
+            kind: z.enum([
+              'bed-double',
+              'bed-single',
+              'bedside',
+              'wardrobe',
+              'desk',
+              'sofa',
+              'coffee-table',
+              'dining-table',
+              'worktop',
+              'appliance',
+              'bath',
+              'basin',
+              'toilet',
+              'washer',
+              'shoe-cabinet',
+              'shelf',
+            ]),
+            x: coord,
+            y: coord,
+            w: positiveInt,
+            h: positiveInt,
+            facing: z.enum(['N', 'E', 'S', 'W']),
+          })
+          .strict(),
+      )
+      .max(512)
+      .optional(),
     violations: z.array(violationSchema).max(256),
     metrics: metricsSchema,
   })
